@@ -40,7 +40,7 @@ python -m uvicorn vedic_engine.api:app --host 0.0.0.0 --port 8000
 EXPO_PUBLIC_ENGINE_URL=http://192.168.1.20:8000     # your PC's IP
 ```
 
-Android emulator: `http://10.0.2.2:8000`. iOS simulator: `http://127.0.0.1:8000`.
+Android emulator: `http://10.0.2.2:8000`. iOS simulator: `https://vedic-engine-eight.vercel.app/engine`.
 You can also change the URL at run time under **Settings → Engine** (stored on the device).
 
 For the **web** target (`npm run web`) the browser enforces CORS, so start the engine with
@@ -50,7 +50,7 @@ For the **web** target (`npm run web`) the browser enforces CORS, so start the e
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `EXPO_PUBLIC_ENGINE_URL` | `http://127.0.0.1:8000` | Vedic Engine base URL |
+| `EXPO_PUBLIC_ENGINE_URL` | `https://vedic-engine-eight.vercel.app/engine` | Vedic Engine base URL |
 | `EXPO_PUBLIC_API_TIMEOUT_MS` | `60000` | Request timeout (AI answers get 120 s) |
 | `EXPO_PUBLIC_APP_ENV` | `development` | `development` / `staging` / `production`, shown in Settings |
 
@@ -66,7 +66,7 @@ secrets there. The Anthropic key for AI answers stays on the engine (set it from
 | `npm run typecheck` | TypeScript |
 | `npm run lint` | ESLint (`eslint-config-expo`) |
 | `npm test` | Unit, component and screen tests (the contract suite is skipped) |
-| `ENGINE_URL=http://127.0.0.1:8000 npm run test:contract` | Calls a running engine and checks every response shape the app relies on |
+| `ENGINE_URL=https://vedic-engine-eight.vercel.app/engine npm run test:contract` | Calls a running engine and checks every response shape the app relies on |
 | `npm run check` | typecheck + lint + tests |
 
 ## How the code is organised

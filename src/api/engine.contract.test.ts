@@ -2,7 +2,7 @@
  * Contract tests: call a running Vedic Engine and check that its responses still have the
  * shape the app depends on. Skipped unless ENGINE_URL is set.
  *
- *   ENGINE_URL=http://127.0.0.1:8000 npm run test:contract
+ *   ENGINE_URL=https://vedic-engine-eight.vercel.app/engine npm run test:contract
  *
  * Saved kundlis are created and deleted again; nothing else is written.
  */

@@ -13,7 +13,7 @@ export type EnvConfig = {
   appEnv: AppEnv;
 };
 
-const DEFAULT_ENGINE_URL = "http://127.0.0.1:8000";
+const DEFAULT_ENGINE_URL = "https://vedic-engine-eight.vercel.app/engine";
 const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** Removes trailing slashes and validates that the value is an http(s) URL. */

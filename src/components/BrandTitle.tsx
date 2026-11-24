@@ -20,5 +20,5 @@ export function BrandTitle() {
 
 const useStyles = makeStyles((t) => ({
   row: { flexDirection: "row", alignItems: "center", gap: 8 },
-  name: { fontFamily: fontSets.latin.display, fontSize: 20, lineHeight: 26, color: t.colors.ink, letterSpacing: -0.2 },
+  name: { fontFamily: fontSets.latin.display, fontSize: 17, lineHeight: 26, color: t.colors.ink, letterSpacing: -0.2 },
 }));

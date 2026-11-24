@@ -1,5 +1,5 @@
 /** Two projects: fast unit/component tests (default) and an opt-in contract suite that
- *  hits a running engine (ENGINE_URL=http://127.0.0.1:8000 npm run test:contract). */
+ *  hits a running engine (ENGINE_URL=https://vedic-engine-eight.vercel.app/engine npm run test:contract). */
 // babel-preset-expo ships inside the expo package.
 const expoBabelPreset = require.resolve("babel-preset-expo", { paths: [require.resolve("expo/package.json")] });
 

@@ -26,5 +26,5 @@ const useStyles = makeStyles((t) => ({
   press: { borderRadius: radius.pill, overflow: "hidden" },
   fab: { flexDirection: "row", alignItems: "center", gap: spacing.sm, paddingVertical: 13, paddingHorizontal: spacing.xl, borderRadius: radius.pill, flexShrink: 0 },
   // Never wrap or clip: Devanagari ("नई कुंडली") needs the taller line and no shrinking.
-  label: { color: t.colors.onAccent, fontSize: 15, lineHeight: Math.round(21 * t.fonts.lineScale), flexShrink: 0, includeFontPadding: false },
+  label: { color: t.colors.onAccent, fontSize: 13, lineHeight: Math.round(21 * t.fonts.lineScale), flexShrink: 0, includeFontPadding: false },
 }));
