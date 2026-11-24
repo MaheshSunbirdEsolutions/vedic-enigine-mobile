@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
-import { colors, radius, spacing } from "@/theme";
+import { View } from "react-native";
+import { makeStyles, radius, spacing } from "@/theme";
 import { Text } from "./Text";
 
 /** Label + value tile (the web's `.stat`). */
 export function Stat({ label, value, children }: { label: string; value?: ReactNode; children?: ReactNode }) {
+  const s = useStyles();
   return (
-    <View style={styles.stat}>
+    <View style={s.stat}>
       <Text variant="small">{label}</Text>
       {value !== undefined ? <Text variant="subheading">{value}</Text> : null}
       {children}
@@ -15,13 +16,13 @@ export function Stat({ label, value, children }: { label: string; value?: ReactN
 }
 
 export function StatRow({ children }: { children: ReactNode }) {
-  return <View style={styles.row}>{children}</View>;
+  return <View style={useStyles().row}>{children}</View>;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   row: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.md },
   stat: {
-    backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: radius.md,
+    backgroundColor: t.colors.card, borderWidth: 1, borderColor: t.colors.line, borderRadius: radius.md,
     paddingVertical: spacing.sm, paddingHorizontal: spacing.md, minWidth: 140, flexGrow: 1,
   },
-});
+}));

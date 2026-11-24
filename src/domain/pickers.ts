@@ -1,5 +1,6 @@
 /** Conversions between form strings and Date objects used by native pickers. */
 import { localIso } from "./birth";
+import { to24h } from "./time12";
 
 /** Builds a device-local Date from "YYYY-MM-DD" and "HH:MM[:SS]" (invalid parts → sensible defaults). */
 export function toPickerDate(date: string, time: string): Date {
@@ -13,3 +14,8 @@ export function toPickerDate(date: string, time: string): Date {
 
 export const pickerToDate = (d: Date) => localIso(d).slice(0, 10);
 export const pickerToTime = (d: Date) => localIso(d).slice(11, 19);
+
+/** Date for the native picker from "YYYY-MM-DD" and a 12-hour time. */
+export function toPickerDate12(date: string, time12: string, meridiem: "AM" | "PM"): Date {
+  return toPickerDate(date, to24h(time12, meridiem) ?? "");
+}

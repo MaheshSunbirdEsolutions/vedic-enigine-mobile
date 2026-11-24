@@ -7,11 +7,11 @@ from the engine, so English / हिन्दी work the same way on both.
 | Screen | What it does |
 |---|---|
 | **Kundlis** | Saved kundlis: search, pull to refresh, tap to open, long-press to delete, **+ New kundli** |
-| **New kundli** | Name, gender, date and time, place search (offline GeoNames), advanced: coordinates, time zone, ayanamsa, node, tags, notes |
+| **New kundli** | Name, gender, date, 12-hour time with AM/PM, place search (offline GeoNames), advanced: coordinates, time zone, ayanamsa, node, tags, notes |
 | **Kundli** | Save / edit / delete, and tabs: **Chart** (D1 + D9, North or South Indian, planet and house tables) · **Dasha** (MD → AD → PD, running periods open) · **Interpretation** · **Sade Sati** · **Reports** (Simple summary) · **Ask** (offline or AI answers, history kept on the phone) |
 | **Panchang** | Any date and place |
 | **Matching** | Ashtakoota for two people, from saved kundlis or new birth details |
-| **Settings** | Language, chart style, engine URL (with a connection test) |
+| **Settings** | Language, appearance (System / Light / Dark), chart style, engine URL (with a connection test) |
 
 The other reports (life story, year-wise, issues, Lal Kitab, Bhrigu…) are on the web app
 for now; the Reports tab links to the same kundli there when `EXPO_PUBLIC_WEB_URL` is set.
@@ -89,11 +89,13 @@ src/
 │                       useSimpleReport, usePanchang, useMatch, useAsk, usePlaceSearch…
 ├─ state/               Client state: preferences (zustand, persisted) and the QueryClient
 ├─ i18n/                Translator (engine bundle + mobile strings + offline fallbacks)
-├─ theme/               Colours (1:1 with vedic-engine web/app/globals.css), spacing, type, tones
+├─ theme/               Light/dark theming, shareable (imports nothing from the app): palettes (light =
+│                       vedic-engine web/app/globals.css), ThemeProvider, useTheme, makeStyles, tokens
 ├─ components/
 │  ├─ ui/               Design system: Text, Button, Card, Chip, Stat, TextField, SegmentedControl,
 │  │                    DataTable, Shimmer/Skeletons, EmptyState, ErrorState, QueryView, Toast, Screen
-│  ├─ kundli/           BirthForm, PlaceSearch, DateTimeField, KundliChart, KundliListItem, KundliView
+│  ├─ form/             DateField, TimeField12 (12-hour + AM/PM, native pickers)
+│  ├─ kundli/           BirthForm (react-hook-form + zod), PlaceSearch, KundliChart, KundliListItem, KundliView
 │  ├─ tabs/             Chart, Dasha, Interpretation, Sade Sati, Reports, Ask
 │  ├─ panchang/ match/  Feature views
 ├─ types/api.ts         Engine request/response types
@@ -110,6 +112,11 @@ Rules the code follows:
   preferences are a small persisted zustand store. Nothing is duplicated between them.
 - **Every data view has four states.** `QueryView` renders a shimmer skeleton while loading,
   an `ErrorState` with **Try again**, an `EmptyState`, or the data. Mutations show inline errors.
+- **Theming.** The app follows the device's light/dark mode unless the user picks one in Settings.
+  Components never hard-code colours: they use `makeStyles((t) => ({ … t.colors.card … }))` or
+  `useTheme()`. The `src/theme` folder can be copied into another app as is.
+- **Forms.** react-hook-form with a zod schema from `domain/` (`birthFormSchema`). Errors show after a
+  field is left or on submit, and disappear as soon as the value becomes valid. Messages are i18n keys.
 - **Errors.** All failures become an `ApiError`; `errorMessageKey()` turns it into a
   translated message. 4xx are never retried; network errors and 5xx are retried twice.
 - **Naming.** Components `PascalCase.tsx`, hooks `useX.ts`, domain modules `camelCase.ts`,
@@ -124,13 +131,21 @@ Rules the code follows:
 5. Add the route file under `src/app/`. New UI text: engine i18n files, or `i18n/strings.ts` for
    mobile-only text (both languages; a test fails if one is missing).
 
+## App icon and splash screen
+
+The mark is a North-Indian kundli frame with the sun at the centre, in the web's saffron. SVG masters
+and the size table are in `assets/source/`. The splash has a light (#faf7f2) and a dark (#15110e)
+version, configured through the `expo-splash-screen` plugin in `app.json`, and stays up until saved
+preferences are loaded. Expo Go shows only the app icon; the splash shows in development and release
+builds (`npx expo run:android`, or `npx eas-cli@latest build`).
+
 ## Tests
 
-86 tests: 80 run with `npm test`, plus the 6-test contract suite that needs a running engine.
+93 tests: 87 run with `npm test`, plus the 6-test contract suite that needs a running engine.
 
 - **Unit** – env parsing, HTTP client (timeouts, cancel, FastAPI error parsing), endpoints,
-  form validation, chart/dasha logic, formatting, translator, retry policy.
-- **Component** – loading / empty / error / data states, birth form and place search,
+  form schema and 12-hour time, theme (device mode, contrast, style caching), chart/dasha logic, formatting, translator, retry policy.
+- **Component** – loading / empty / error / data states, birth form (errors clear as fields are fixed) and place search,
   both chart styles, every tab with real engine responses, Hindi.
 - **Screen** – the kundli list (skeleton → data, empty, error → retry, search) and the kundli
   view (tab switching, engine error → retry, save new, save error, ask a question), with the API mocked.

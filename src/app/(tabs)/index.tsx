@@ -1,16 +1,18 @@
 /** Saved kundlis: search, list, pull to refresh, long-press to delete, + new. */
 import { useCallback, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
 import { KundliListItem } from "@/components/kundli/KundliListItem";
 import { Button, EmptyState, ErrorState, SkeletonList, Text, TextField, confirmAsync, useToast } from "@/components/ui";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useDeleteKundli, useKundliList } from "@/hooks/useKundlis";
 import { useI18n } from "@/i18n/I18nProvider";
-import { colors, spacing } from "@/theme";
+import { makeStyles, spacing, useTheme } from "@/theme";
 import type { Kundli } from "@/types/api";
 
 export default function KundlisScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const { t } = useI18n();
   const router = useRouter();
   const toast = useToast();
@@ -56,9 +58,9 @@ export default function KundlisScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+const useStyles = makeStyles((t) => ({
+  root: { flex: 1, backgroundColor: t.colors.bg },
   content: { padding: spacing.lg, paddingBottom: 48 },
   titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.md },
   flex: { flex: 1 },
-});
+}));

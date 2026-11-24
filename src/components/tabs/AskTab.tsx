@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { StyleSheet, Switch, View } from "react-native";
+import { Switch, View } from "react-native";
 import { Button, Chip, EmptyState, InlineError, Section, Text, TextField } from "@/components/ui";
 import { ASK_EXAMPLES, isValidQuestion, type AskHistoryItem } from "@/domain/ask";
 import { verdictTone } from "@/domain/tone";
 import { useAsk, useAskStatus } from "@/hooks/useAsk";
 import { useI18n } from "@/i18n/I18nProvider";
-import { colors, spacing } from "@/theme";
+import { makeStyles, spacing, useTheme } from "@/theme";
 import type { AskResponse, Kundli } from "@/types/api";
 import { FindingCard } from "./FindingCard";
 
 export function AskTab({ kundli }: { kundli: Kundli }) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const { t, lang } = useI18n();
   const status = useAskStatus();
   const { history, ask, busy, clear } = useAsk(kundli, lang);
@@ -45,6 +47,7 @@ export function AskTab({ kundli }: { kundli: Kundli }) {
 }
 
 function HistoryItem({ item }: { item: AskHistoryItem }) {
+  const styles = useStyles();
   return (
     <View style={styles.item} testID="ask-item">
       <Text variant="subheading">❓ {item.q}</Text>
@@ -55,6 +58,7 @@ function HistoryItem({ item }: { item: AskHistoryItem }) {
 }
 
 function Answer({ r }: { r: AskResponse }) {
+  const styles = useStyles();
   const { t, T } = useI18n();
   return (
     <View>
@@ -89,13 +93,13 @@ function Answer({ r }: { r: AskResponse }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   input: { minHeight: 80 },
   row: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   toggle: { flexDirection: "row", alignItems: "center", gap: 6 },
   status: { marginVertical: spacing.sm },
   chips: { flexDirection: "row", flexWrap: "wrap" },
-  item: { borderTopWidth: 1, borderTopColor: colors.line, paddingTop: spacing.md, marginTop: spacing.md },
+  item: { borderTopWidth: 1, borderTopColor: t.colors.line, paddingTop: spacing.md, marginTop: spacing.md },
   ref: { marginBottom: 6, fontSize: 14 },
   bold: { fontWeight: "600" },
-});
+}));

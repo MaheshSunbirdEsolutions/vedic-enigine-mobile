@@ -7,12 +7,15 @@ import { useEngineHealth } from "@/hooks/useEngineHealth";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getEngineUrl, usePreferences } from "@/state/preferences";
 import { spacing } from "@/theme";
+import type { ColorPreference } from "@/theme";
 import type { Lang } from "@/types/api";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function SettingsScreen() {
   const { t, lang, setLang } = useI18n();
   const qc = useQueryClient();
+  const colorScheme = usePreferences((s) => s.colorScheme);
+  const setColorScheme = usePreferences((s) => s.setColorScheme);
   const chartStyle = usePreferences((s) => s.chartStyle);
   const setChartStyle = usePreferences((s) => s.setChartStyle);
   const override = usePreferences((s) => s.engineUrlOverride);
@@ -34,6 +37,10 @@ export default function SettingsScreen() {
       <Card title={t("settings_language")}>
         <SegmentedControl<Lang> testID="lang" value={lang} onChange={setLang}
           segments={[{ value: "en", label: "English" }, { value: "hi", label: "हिन्दी" }]} />
+      </Card>
+      <Card title={t("settings_appearance")}>
+        <SegmentedControl<ColorPreference> testID="appearance" value={colorScheme} onChange={setColorScheme}
+          segments={[{ value: "system", label: t("appearance_system") }, { value: "light", label: t("appearance_light") }, { value: "dark", label: t("appearance_dark") }]} />
       </Card>
       <Card title={t("settings_chart_style")}>
         <SegmentedControl value={chartStyle} onChange={setChartStyle}

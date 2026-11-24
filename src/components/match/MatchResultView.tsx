@@ -1,14 +1,15 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { Chip, DataTable, Stat, StatRow, Text, type Column } from "@/components/ui";
 import { humanize } from "@/domain/format";
 import { isAcceptable, matchDoshas } from "@/domain/match";
 import { useI18n } from "@/i18n/I18nProvider";
-import { colors, font } from "@/theme";
+import { font, makeStyles } from "@/theme";
 import type { Koota, MatchResult } from "@/types/api";
 
 type Row = Koota & { key: string };
 
 export function MatchResultView({ m }: { m: MatchResult }) {
+  const styles = useStyles();
   const { t, T } = useI18n();
   const ok = isAcceptable(m);
   const doshas = matchDoshas(m);
@@ -36,10 +37,10 @@ export function MatchResultView({ m }: { m: MatchResult }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   b: { fontWeight: "600", fontSize: 14 },
-  big: { fontSize: font.size.xxl, fontWeight: "700", color: colors.accent, lineHeight: 42 },
-  max: { fontSize: 18, color: colors.muted, fontWeight: "400" },
+  big: { fontSize: font.size.xxl, fontWeight: "700", color: t.colors.accent, lineHeight: 42 },
+  max: { fontSize: 18, color: t.colors.muted, fontWeight: "400" },
   chips: { flexDirection: "row", flexWrap: "wrap" },
   note: { marginTop: 12 },
-});
+}));

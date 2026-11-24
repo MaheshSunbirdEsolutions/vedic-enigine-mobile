@@ -1,5 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { colors, radius, spacing } from "@/theme";
+import { Pressable, ScrollView, View } from "react-native";
+import { makeStyles, radius, spacing } from "@/theme";
 import { Text } from "./Text";
 
 export type Segment<T extends string> = { value: T; label: string };
@@ -11,27 +11,28 @@ export type Segment<T extends string> = { value: T; label: string };
 export function SegmentedControl<T extends string>({ segments, value, onChange, scroll, testID }: {
   segments: Segment<T>[]; value: T; onChange: (v: T) => void; scroll?: boolean; testID?: string;
 }) {
-  const items = segments.map((s) => {
-    const on = s.value === value;
+  const s = useStyles();
+  const items = segments.map((seg) => {
+    const on = seg.value === value;
     return (
-      <Pressable key={s.value} testID={testID ? `${testID}-${s.value}` : undefined} onPress={() => onChange(s.value)}
+      <Pressable key={seg.value} testID={testID ? `${testID}-${seg.value}` : undefined} onPress={() => onChange(seg.value)}
         accessibilityRole="tab" accessibilityState={{ selected: on }}
-        style={[styles.item, on && styles.on, !scroll && styles.flex]}>
-        <Text style={[styles.label, on && styles.labelOn]} numberOfLines={1}>{s.label}</Text>
+        style={[s.item, on && s.on, !scroll && s.flex]}>
+        <Text style={[s.label, on && s.labelOn]} numberOfLines={1}>{seg.label}</Text>
       </Pressable>
     );
   });
   return scroll
-    ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row} style={styles.scroll}>{items}</ScrollView>
-    : <View style={styles.row}>{items}</View>;
+    ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.row} style={s.scroll}>{items}</ScrollView>
+    : <View style={s.row}>{items}</View>;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   scroll: { flexGrow: 0 },
   row: { flexDirection: "row", gap: 6, paddingVertical: 2, marginBottom: spacing.md },
-  item: { backgroundColor: colors.buttonLight, borderRadius: radius.sm, paddingVertical: 8, paddingHorizontal: spacing.md, alignItems: "center" },
+  item: { backgroundColor: t.colors.buttonLight, borderRadius: radius.sm, paddingVertical: 8, paddingHorizontal: spacing.md, alignItems: "center" },
   flex: { flex: 1 },
-  on: { backgroundColor: colors.accent },
+  on: { backgroundColor: t.colors.accent },
   label: { fontSize: 14, fontWeight: "500" },
-  labelOn: { color: colors.white, fontWeight: "600" },
-});
+  labelOn: { color: t.colors.onAccent, fontWeight: "600" },
+}));

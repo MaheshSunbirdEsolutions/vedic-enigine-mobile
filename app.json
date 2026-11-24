@@ -6,15 +6,16 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mandavconsultancy.jyotishlab"
+      "bundleIdentifier": "com.mandavconsultancy.jyotishlab",
+      "icon": "./assets/icon.png"
     },
     "android": {
       "package": "com.mandavconsultancy.jyotishlab",
       "adaptiveIcon": {
-        "backgroundColor": "#FAF7F2",
+        "backgroundColor": "#c2571a",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -27,10 +28,24 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#faf7f2",
+          "dark": {
+            "image": "./assets/splash-icon-dark.png",
+            "backgroundColor": "#15110e"
+          }
+        }
+      ],
       "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": false
-    }
+    },
+    "backgroundColor": "#faf7f2"
   }
 }

@@ -1,5 +1,7 @@
 /** Maps engine labels to a visual tone (colour family). One table per concept. */
-export type Tone = "good" | "bad" | "mixed" | "neutral" | "accent";
+import type { Tone } from "@/theme";
+
+export type { Tone };
 
 export function ratingTone(r?: string | null): Tone {
   if (r === "excellent" || r === "good") return "good";

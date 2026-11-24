@@ -1,10 +1,10 @@
 /** North and South Indian kundli drawings (react-native-svg). Pure presentation. */
 import { memo } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import Svg, { G as SvgGroup, Path, Rect, Text as SvgText } from "react-native-svg";
 import { SIGNS } from "@/domain/chart";
 import { labelPositions, NORTH_LINES, NORTH_PLANET_ANCHOR, NORTH_SIGN_ANCHOR, SOUTH_CELL } from "@/domain/chartGeometry";
-import { colors } from "@/theme";
+import { makeStyles, useTheme } from "@/theme";
 
 export type KundliChartProps = {
   variant: "north" | "south";
@@ -20,6 +20,8 @@ export type KundliChartProps = {
 };
 
 export const KundliChart = memo(function KundliChart(p: KundliChartProps) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   return (
     <View style={styles.box} testID={p.testID}>
       <Svg viewBox="-2 -2 404 404" width="100%" height="100%">
@@ -31,6 +33,7 @@ export const KundliChart = memo(function KundliChart(p: KundliChartProps) {
 });
 
 function North({ lagna, bySign, ascLabel }: KundliChartProps) {
+  const { colors } = useTheme();
   return (
     <>
       <Path d={NORTH_LINES} fill="none" stroke={colors.chartLine} strokeWidth={1.5} />
@@ -53,6 +56,7 @@ function North({ lagna, bySign, ascLabel }: KundliChartProps) {
 }
 
 function South({ lagna, bySign, ascLabel, centreLabel, signLabel }: KundliChartProps) {
+  const { colors } = useTheme();
   return (
     <>
       {Object.entries(SOUTH_CELL).map(([sg, [c, r]]) => {
@@ -75,6 +79,6 @@ function South({ lagna, bySign, ascLabel, centreLabel, signLabel }: KundliChartP
 }
 
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(() => ({
   box: { width: "100%", maxWidth: 420, aspectRatio: 1, alignSelf: "center" },
-});
+}));

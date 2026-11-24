@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { BirthForm } from "@/components/kundli/BirthForm";
 import { Button, Card, Text } from "@/components/ui";
 import { describeBirth } from "@/domain/birth";
 import { useI18n } from "@/i18n/I18nProvider";
-import { colors, radius, spacing } from "@/theme";
+import { makeStyles, radius, spacing } from "@/theme";
 import type { Kundli } from "@/types/api";
 
 /** Pick a person for matching: one of the saved kundlis, or new birth details. */
 export function PersonPicker({ title, saved, value, onChange, testID }: {
   title: string; saved: Kundli[]; value: Kundli | null; onChange: (k: Kundli | null) => void; testID?: string;
 }) {
+  const styles = useStyles();
   const { t } = useI18n();
   const [mode, setMode] = useState<"closed" | "saved" | "manual">("closed");
   return (
@@ -34,8 +35,8 @@ export function PersonPicker({ title, saved, value, onChange, testID }: {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginVertical: spacing.sm },
-  option: { padding: spacing.md, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.line, marginBottom: 6 },
-  on: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
-});
+  option: { padding: spacing.md, borderRadius: radius.sm, borderWidth: 1, borderColor: t.colors.line, marginBottom: 6 },
+  on: { backgroundColor: t.colors.accentSoft, borderColor: t.colors.accent },
+}));

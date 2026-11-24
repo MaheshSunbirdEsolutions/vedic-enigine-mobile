@@ -1,35 +1,67 @@
 /**
- * Birth form state and validation, kept out of the UI so it can be unit-tested.
- * Error values are i18n keys.
+ * Birth form: zod schema (validation rules), default values and conversion to a Kundli.
+ * No React here; the form component binds this to react-hook-form.
+ * Every validation message is an i18n key.
  */
-import type { Ayanamsa, Gender, Kundli, NodeType, Place } from "@/types/api";
+import { z } from "zod";
+import type { Kundli, Place } from "@/types/api";
+import { to12h, to24h, TIME12_RE } from "./time12";
 
-export type BirthFormValues = {
-  name: string;
-  gender: Gender;
-  date: string; // YYYY-MM-DD
-  time: string; // HH:MM or HH:MM:SS
-  place: Place | null;
-  lat: string;
-  lon: string;
-  tz: string;
-  ayanamsa: Ayanamsa;
-  node: NodeType;
-  notes: string;
-  tags: string;
+export function isValidDate(s: string): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (!m) return false;
+  const [y, mo, d] = [+m[1], +m[2], +m[3]];
+  if (y < 1800 || y > 2200 || mo < 1 || mo > 12 || d < 1) return false;
+  return d <= new Date(Date.UTC(y, mo, 0)).getUTCDate();
+}
+
+const TZ_RE = /^(UTC|GMT|[A-Za-z_]+(\/[A-Za-z0-9_+-]+)+)$/;
+
+const inRange = (min: number, max: number) => (s: string) => {
+  const n = Number(s);
+  return s.trim() !== "" && Number.isFinite(n) && n >= min && n <= max;
 };
 
-export type BirthFormErrors = Partial<Record<"date" | "time" | "place" | "lat" | "lon" | "tz", string>>;
+/** Empty → "required" message, otherwise the format message. */
+const required = (empty: string, format: string, ok: (s: string) => boolean) =>
+  z.string().superRefine((s, ctx) => {
+    if (!s.trim()) ctx.addIssue({ code: "custom", message: empty });
+    else if (!ok(s.trim())) ctx.addIssue({ code: "custom", message: format });
+  });
 
-export type BirthFormResult = { ok: true; kundli: Kundli } | { ok: false; errors: BirthFormErrors };
+export const birthFormSchema = z
+  .object({
+    name: z.string().max(120, "err_name_long"),
+    gender: z.enum(["", "male", "female", "other"]),
+    date: required("err_dt", "err_date_format", isValidDate),
+    time: required("err_dt", "err_time_format", (s) => TIME12_RE.test(s)),
+    meridiem: z.enum(["AM", "PM"]),
+    place: z.custom<Place | null>(),
+    lat: z.string().refine(inRange(-90, 90), "err_lat"),
+    lon: z.string().refine(inRange(-180, 180), "err_lon"),
+    tz: z.string().refine((s) => TZ_RE.test(s.trim()), "err_tz"),
+    ayanamsa: z.enum(["lahiri", "raman", "krishnamurti", "true_chitra"]),
+    node: z.enum(["mean", "true"]),
+    notes: z.string(),
+    tags: z.string(),
+  })
+  // One summary message under the place field while the coordinates are incomplete.
+  .superRefine((v, ctx) => {
+    const coordsOk = inRange(-90, 90)(v.lat) && inRange(-180, 180)(v.lon) && TZ_RE.test(v.tz.trim());
+    if (!coordsOk) ctx.addIssue({ code: "custom", path: ["place"], message: "err_place" });
+  });
 
-export function initialFormValues(k?: Partial<Kundli>): BirthFormValues {
+export type BirthFormValues = z.infer<typeof birthFormSchema>;
+
+export function defaultBirthValues(k?: Partial<Kundli>): BirthFormValues {
   const hasPlace = k?.tz !== undefined && k.lat !== undefined && k.lon !== undefined;
+  const t = k?.datetime_local ? to12h(k.datetime_local.slice(11, 19)) : { time: "", meridiem: "AM" as const };
   return {
     name: k?.name ?? "",
     gender: k?.gender ?? "",
     date: k?.datetime_local?.slice(0, 10) ?? "",
-    time: k?.datetime_local?.slice(11, 19) ?? "",
+    time: t.time,
+    meridiem: t.meridiem,
     place: hasPlace ? { name: k!.place ?? "", country: "", lat: k!.lat!, lon: k!.lon!, tz: k!.tz! } : null,
     lat: k?.lat?.toString() ?? "",
     lon: k?.lon?.toString() ?? "",
@@ -41,59 +73,36 @@ export function initialFormValues(k?: Partial<Kundli>): BirthFormValues {
   };
 }
 
-/** Picking a place fills the coordinates and zone. */
-export const applyPlace = (v: BirthFormValues, p: Place): BirthFormValues => ({
-  ...v, place: p, lat: String(p.lat), lon: String(p.lon), tz: p.tz,
-});
+/** Values to set when a place is picked from the search. */
+export const placeFields = (p: Place) => ({ place: p, lat: String(p.lat), lon: String(p.lon), tz: p.tz });
 
-export function isValidDate(s: string): boolean {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
-  if (!m) return false;
-  const [y, mo, d] = [+m[1], +m[2], +m[3]];
-  if (y < 1800 || y > 2200 || mo < 1 || mo > 12 || d < 1) return false;
-  const dim = new Date(Date.UTC(y, mo, 0)).getUTCDate();
-  return d <= dim;
-}
-
-/** Returns "HH:MM:SS" or null. */
-export function normalizeTime(s: string): string | null {
-  const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(s.trim());
-  if (!m) return null;
-  const [h, mi, se] = [+m[1], +m[2], m[3] ? +m[3] : 0];
-  if (h > 23 || mi > 59 || se > 59) return null;
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${p(h)}:${p(mi)}:${p(se)}`;
-}
-
-const TZ_RE = /^(UTC|GMT|[A-Za-z_]+(\/[A-Za-z0-9_+-]+)+)$/;
-
-export function validateBirthForm(v: BirthFormValues, id?: string): BirthFormResult {
-  const errors: BirthFormErrors = {};
-  if (!isValidDate(v.date)) errors.date = v.date.trim() ? "err_date_format" : "err_dt";
-  const time = normalizeTime(v.time);
-  if (!time) errors.time = v.time.trim() ? "err_time_format" : "err_dt";
-  const lat = Number(v.lat), lon = Number(v.lon), tz = v.tz.trim();
-  if (v.lat.trim() === "" || !Number.isFinite(lat) || lat < -90 || lat > 90) errors.lat = "err_lat";
-  if (v.lon.trim() === "" || !Number.isFinite(lon) || lon < -180 || lon > 180) errors.lon = "err_lon";
-  if (!TZ_RE.test(tz)) errors.tz = "err_tz";
-  // One summary message under the place field; the advanced fields get their own short hints.
-  if (errors.lat || errors.lon || errors.tz) errors.place = "err_place";
-  if (Object.keys(errors).length) return { ok: false, errors };
-
+/** Builds the kundli from values that passed the schema. */
+export function toKundli(v: BirthFormValues, id?: string): Kundli {
+  const time = to24h(v.time, v.meridiem)!;
   return {
-    ok: true,
-    kundli: {
-      ...(id ? { id } : {}),
-      name: v.name.trim() || `${v.date} ${time!.slice(0, 5)}`,
-      gender: v.gender,
-      place: v.place?.name ?? "",
-      datetime_local: `${v.date}T${time}`,
-      tz,
-      lat,
-      lon,
-      settings: { ayanamsa: v.ayanamsa, node: v.node },
-      notes: v.notes,
-      tags: v.tags,
-    },
+    ...(id ? { id } : {}),
+    name: v.name.trim() || `${v.date} ${v.time.trim()} ${v.meridiem}`,
+    gender: v.gender,
+    place: v.place?.name ?? "",
+    datetime_local: `${v.date}T${time}`,
+    tz: v.tz.trim(),
+    lat: Number(v.lat),
+    lon: Number(v.lon),
+    settings: { ayanamsa: v.ayanamsa, node: v.node },
+    notes: v.notes,
+    tags: v.tags,
   };
+}
+
+/** Validates without React (used by tests and anywhere a form is checked in code). */
+export function validateBirthForm(v: BirthFormValues, id?: string):
+  { ok: true; kundli: Kundli } | { ok: false; errors: Partial<Record<keyof BirthFormValues, string>> } {
+  const r = birthFormSchema.safeParse(v);
+  if (r.success) return { ok: true, kundli: toKundli(r.data, id) };
+  const errors: Partial<Record<keyof BirthFormValues, string>> = {};
+  for (const i of r.error.issues) {
+    const k = i.path[0] as keyof BirthFormValues;
+    if (k && !errors[k]) errors[k] = i.message;
+  }
+  return { ok: false, errors };
 }

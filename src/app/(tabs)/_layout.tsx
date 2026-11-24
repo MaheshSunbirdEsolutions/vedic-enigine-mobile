@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { Text, type ColorValue } from "react-native";
 import { useI18n } from "@/i18n/I18nProvider";
-import { colors } from "@/theme";
+import { navigationTheme, useTheme } from "@/theme";
 
 function TabIcon({ glyph, color }: { glyph: string; color: ColorValue }) {
   return <Text style={{ color, fontSize: 18 }}>{glyph}</Text>;
@@ -10,17 +10,9 @@ const icon = (glyph: string) => function Icon({ color }: { color: ColorValue }) 
 
 export default function TabLayout() {
   const { t } = useI18n();
+  const nav = navigationTheme(useTheme());
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.line },
-        headerStyle: { backgroundColor: colors.card },
-        headerTitleStyle: { color: colors.ink, fontWeight: "600" },
-        sceneStyle: { backgroundColor: colors.bg },
-      }}
-    >
+    <Tabs screenOptions={{ ...nav.tabBar, ...nav.header, sceneStyle: nav.content }}>
       <Tabs.Screen name="index" options={{ title: t("nav_home"), headerTitle: "Jyotish Lab", tabBarIcon: icon("ॐ") }} />
       <Tabs.Screen name="panchang" options={{ title: t("nav_panchang"), tabBarIcon: icon("☀") }} />
       <Tabs.Screen name="match" options={{ title: t("nav_match"), tabBarIcon: icon("♥") }} />

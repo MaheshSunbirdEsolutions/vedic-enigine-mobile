@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
-import { colors, spacing } from "@/theme";
+import { RefreshControl, ScrollView, View } from "react-native";
+import { makeStyles, spacing, useTheme } from "@/theme";
 
 /**
  * Page container: background colour, padding, optional scroll and pull-to-refresh.
@@ -9,6 +9,8 @@ import { colors, spacing } from "@/theme";
 export function Screen({ children, scroll = true, onRefresh, refreshing = false, testID }: {
   children: ReactNode; scroll?: boolean; onRefresh?: () => void; refreshing?: boolean; testID?: string;
 }) {
+  const styles = useStyles();
+  const t = useTheme();
   if (!scroll) return <View testID={testID} style={[styles.root, styles.pad]}>{children}</View>;
   return (
     <ScrollView
@@ -17,14 +19,14 @@ export function Screen({ children, scroll = true, onRefresh, refreshing = false,
       contentContainerStyle={styles.pad}
       keyboardShouldPersistTaps="handled"
       contentInsetAdjustmentBehavior="automatic"
-      refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} /> : undefined}
+      refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={t.colors.accent} colors={[t.colors.accent]} /> : undefined}
     >
       {children}
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+const useStyles = makeStyles((t) => ({
+  root: { flex: 1, backgroundColor: t.colors.bg },
   pad: { padding: spacing.lg, paddingBottom: 48, flexGrow: 1 },
-});
+}));

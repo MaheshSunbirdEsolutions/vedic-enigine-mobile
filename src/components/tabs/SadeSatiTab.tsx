@@ -1,12 +1,13 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { Card, Chip, Section, Stat, StatRow, Text } from "@/components/ui";
 import { isCurrent } from "@/domain/dasha";
 import { formatDate } from "@/domain/format";
 import { useI18n } from "@/i18n/I18nProvider";
-import { colors, spacing } from "@/theme";
+import { makeStyles, spacing } from "@/theme";
 import type { SadeSati } from "@/types/api";
 
 export function SadeSatiTab({ data, now }: { data: SadeSati; now?: Date }) {
+  const styles = useStyles();
   const { t, T, lang } = useI18n();
   const n = data.now;
   return (
@@ -32,7 +33,7 @@ export function SadeSatiTab({ data, now }: { data: SadeSati; now?: Date }) {
   );
 }
 
-const styles = StyleSheet.create({
-  cur: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
+const useStyles = makeStyles((t) => ({
+  cur: { backgroundColor: t.colors.accentSoft, borderColor: t.colors.accent },
   chips: { flexDirection: "row", flexWrap: "wrap", marginTop: spacing.sm },
-});
+}));

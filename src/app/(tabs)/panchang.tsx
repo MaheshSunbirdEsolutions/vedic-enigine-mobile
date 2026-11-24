@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PlaceSearch } from "@/components/kundli/PlaceSearch";
-import { DateTimeField } from "@/components/kundli/DateTimeField";
+import { DateField } from "@/components/form/DateField";
 import { PanchangView } from "@/components/panchang/PanchangView";
 import { Card, EmptyState, QueryView, Screen, SkeletonCards } from "@/components/ui";
 import { isValidDate } from "@/domain/birthForm";
@@ -19,7 +19,7 @@ export default function PanchangScreen() {
   return (
     <Screen testID="panchang-screen">
       <Card>
-        <DateTimeField mode="date" label={t("date")} date={day} time="12:00" onChange={setDay} error={isValidDate(day) ? null : t("err_dt")} />
+        <DateField testID="panchang-date" label={t("date")} value={day} onChange={setDay} error={isValidDate(day) ? null : t("err_date_format")} />
         <PlaceSearch label={t("place")} value={place} onSelect={setPlace} placeholder={t("city_ph")} testID="panchang-place" />
       </Card>
       {req ? (

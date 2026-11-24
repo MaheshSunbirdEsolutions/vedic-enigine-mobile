@@ -1,12 +1,13 @@
 /** Lightweight toast for confirmations ("Saved", "Deleted"). */
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { Animated, StyleSheet } from "react-native";
-import { colors, radius, spacing } from "@/theme";
+import { Animated } from "react-native";
+import { makeStyles, radius, spacing } from "@/theme";
 import { Text } from "./Text";
 
 const Ctx = createContext<(msg: string) => void>(() => {});
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   const [msg, setMsg] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const show = useCallback((m: string) => {
@@ -29,7 +30,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
 export const useToast = () => useContext(Ctx);
 
-const styles = StyleSheet.create({
-  toast: { position: "absolute", left: spacing.lg, right: spacing.lg, bottom: 40, backgroundColor: colors.ink, borderRadius: radius.md, padding: spacing.md },
-  text: { color: colors.white, textAlign: "center" },
-});
+const useStyles = makeStyles((t) => ({
+  toast: { position: "absolute", left: spacing.lg, right: spacing.lg, bottom: 40, backgroundColor: t.colors.toastBg, borderRadius: radius.md, padding: spacing.md },
+  text: { color: t.colors.toastText, textAlign: "center" },
+}));

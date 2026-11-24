@@ -1,10 +1,10 @@
 /** City search against the engine's offline GeoNames list. Results appear inline below the field. */
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { Text, TextField } from "@/components/ui";
 import { MIN_PLACE_QUERY, usePlaceSearch } from "@/hooks/usePlaceSearch";
 import { useI18n } from "@/i18n/I18nProvider";
-import { colors, radius, spacing } from "@/theme";
+import { makeStyles, radius, spacing, useTheme } from "@/theme";
 import type { Place } from "@/types/api";
 
 export const placeLabel = (p: Place) => `${p.name}${p.country ? `, ${p.country}` : ""}`;
@@ -12,6 +12,8 @@ export const placeLabel = (p: Place) => `${p.name}${p.country ? `, ${p.country}`
 export function PlaceSearch({ value, onSelect, label, placeholder, error, testID = "place-search" }: {
   value: Place | null; onSelect: (p: Place) => void; label?: string; placeholder?: string; error?: string | null; testID?: string;
 }) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const { t } = useI18n();
   // While typing we show the draft; otherwise the chosen place (so a new `value` always shows).
   const [draft, setDraft] = useState<string | null>(null);
@@ -47,10 +49,10 @@ export function PlaceSearch({ value, onSelect, label, placeholder, error, testID
   );
 }
 
-const styles = StyleSheet.create({
-  list: { borderWidth: 1, borderColor: colors.line, borderRadius: radius.sm, backgroundColor: colors.card, marginTop: -spacing.sm, marginBottom: spacing.md },
-  item: { paddingHorizontal: spacing.md, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.lineSoft },
-  pressed: { backgroundColor: colors.accentSoft },
+const useStyles = makeStyles((t) => ({
+  list: { borderWidth: 1, borderColor: t.colors.line, borderRadius: radius.sm, backgroundColor: t.colors.card, marginTop: -spacing.sm, marginBottom: spacing.md },
+  item: { paddingHorizontal: spacing.md, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: t.colors.lineSoft },
+  pressed: { backgroundColor: t.colors.accentSoft },
   pad: { padding: spacing.md },
   info: { marginTop: -spacing.sm, marginBottom: spacing.md },
-});
+}));

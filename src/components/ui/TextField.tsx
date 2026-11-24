@@ -1,31 +1,38 @@
-import { StyleSheet, TextInput, View, type TextInputProps } from "react-native";
-import { colors, radius, spacing } from "@/theme";
+import type { ComponentRef, Ref } from "react";
+import { TextInput, View, type TextInputProps } from "react-native";
+import { makeStyles, radius, spacing, useTheme } from "@/theme";
 import { Text } from "./Text";
 
-export type TextFieldProps = TextInputProps & { label?: string; error?: string | null };
+export type TextFieldProps = TextInputProps & { label?: string; error?: string | null; ref?: Ref<ComponentRef<typeof TextInput>> };
 
-export function TextField({ label, error, style, ...rest }: TextFieldProps) {
+export function TextField({ label, error, style, ref, ...rest }: TextFieldProps) {
+  const s = useStyles();
+  const t = useTheme();
   return (
-    <View style={styles.wrap}>
+    <View style={s.wrap}>
       {label ? <Text variant="label">{label}</Text> : null}
       <TextInput
-        placeholderTextColor={colors.muted}
+        ref={ref}
+        placeholderTextColor={t.colors.muted}
+        selectionColor={t.colors.accent}
+        keyboardAppearance={t.dark ? "dark" : "light"}
         accessibilityLabel={rest.accessibilityLabel ?? label}
+        aria-invalid={!!error}
         {...rest}
-        style={[styles.input, error ? styles.inputError : null, rest.multiline && styles.multi, style]}
+        style={[s.input, error ? s.inputError : null, rest.multiline && s.multi, style]}
       />
-      {error ? <Text variant="small" style={styles.error}>{error}</Text> : null}
+      {error ? <Text variant="small" style={s.error} accessibilityLiveRegion="polite">{error}</Text> : null}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   wrap: { marginBottom: spacing.md },
   input: {
-    borderWidth: 1, borderColor: colors.line, borderRadius: radius.sm, backgroundColor: colors.card,
-    paddingHorizontal: spacing.md, paddingVertical: 10, fontSize: 15, color: colors.ink,
+    borderWidth: 1, borderColor: t.colors.line, borderRadius: radius.sm, backgroundColor: t.colors.card,
+    paddingHorizontal: spacing.md, paddingVertical: 10, fontSize: 15, color: t.colors.ink,
   },
-  inputError: { borderColor: colors.bad },
+  inputError: { borderColor: t.colors.bad },
   multi: { minHeight: 72, textAlignVertical: "top" },
-  error: { color: colors.bad, marginTop: 4 },
-});
+  error: { color: t.colors.bad, marginTop: 4 },
+}));

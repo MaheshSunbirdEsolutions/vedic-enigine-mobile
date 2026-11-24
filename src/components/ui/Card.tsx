@@ -1,22 +1,25 @@
-import { StyleSheet, View, type ViewProps } from "react-native";
+import { View, type ViewProps } from "react-native";
 import type { Tone } from "@/domain/tone";
-import { colors, radius, shadow, spacing, toneColors } from "@/theme";
+import { makeStyles, radius, spacing, useTheme } from "@/theme";
 import { Text } from "./Text";
 
-/** White panel with the web's border + shadow. `tone` adds a coloured left edge (findings). */
+/** Panel with the web's border + shadow. `tone` adds a coloured left edge (findings). */
 export function Card({ style, title, tone, children, ...rest }: ViewProps & { title?: string; tone?: Tone }) {
+  const s = useStyles();
+  const t = useTheme();
+  const edge = tone ? { borderLeftWidth: 4, borderLeftColor: tone === "neutral" ? t.colors.accent : t.tones[tone].fg } : null;
   return (
-    <View {...rest} style={[styles.card, tone && { borderLeftWidth: 4, borderLeftColor: tone === "neutral" ? colors.accent : toneColors[tone].fg }, style]}>
-      {title ? <Text variant="subheading" style={styles.title}>{title}</Text> : null}
+    <View {...rest} style={[s.card, edge, style]}>
+      {title ? <Text variant="subheading" style={s.title}>{title}</Text> : null}
       {children}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
-    backgroundColor: colors.card, borderColor: colors.line, borderWidth: 1, borderRadius: radius.lg,
-    padding: spacing.lg, marginBottom: spacing.md, ...shadow,
+    backgroundColor: t.colors.card, borderColor: t.colors.line, borderWidth: 1, borderRadius: radius.lg,
+    padding: spacing.lg, marginBottom: spacing.md, ...t.shadow,
   },
   title: { marginBottom: spacing.sm },
-});
+}));

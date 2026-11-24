@@ -1,14 +1,15 @@
 import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Stat, StatRow, Text } from "@/components/ui";
 import { currentKeys, flattenDasha, toggleKey, type DashaRow } from "@/domain/dasha";
 import { formatDate } from "@/domain/format";
 import { useI18n } from "@/i18n/I18nProvider";
-import { colors, spacing } from "@/theme";
+import { makeStyles, spacing } from "@/theme";
 import type { Dasha } from "@/types/api";
 
 /** Vimshottari MD → AD → PD as an expandable list; the running periods start open. */
 export function DashaTab({ dasha, now }: { dasha: Dasha; now?: Date }) {
+  const styles = useStyles();
   const { t, T, lang } = useI18n();
   const [expanded, setExpanded] = useState(() => currentKeys(dasha.mahadashas, now));
   const rows = useMemo(() => flattenDasha(dasha.mahadashas, expanded, now), [dasha, expanded, now]);
@@ -37,11 +38,11 @@ export function DashaTab({ dasha, now }: { dasha: Dasha; now?: Date }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   hint: { marginBottom: spacing.sm },
-  row: { paddingVertical: 9, paddingRight: 8, borderBottomWidth: 1, borderBottomColor: colors.lineSoft },
-  cur: { backgroundColor: colors.accentSoft },
+  row: { paddingVertical: 9, paddingRight: 8, borderBottomWidth: 1, borderBottomColor: t.colors.lineSoft },
+  cur: { backgroundColor: t.colors.accentSoft },
   lord: { fontSize: 15 },
   b: { fontWeight: "600" },
-  muted: { color: colors.muted },
-});
+  muted: { color: t.colors.muted },
+}));

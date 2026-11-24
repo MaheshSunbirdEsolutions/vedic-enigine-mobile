@@ -1,5 +1,6 @@
 /** Birth-data helpers shared by every feature. Pure functions, no React. */
 import type { Birth, ChartSettings, Kundli } from "@/types/api";
+import { to12h } from "./time12";
 
 export const DEFAULT_SETTINGS: ChartSettings = { ayanamsa: "lahiri", node: "mean" };
 
@@ -35,5 +36,7 @@ export function localIso(d: Date): string {
 export const todayIn = (tz: string, at?: Date) => nowIn(tz, at).slice(0, 10);
 
 /** Short one-line description used in lists and headers. */
-export const describeBirth = (k: Kundli) =>
-  `${k.datetime_local.replace("T", " ").slice(0, 16)} · ${k.place || `${k.lat.toFixed(3)}, ${k.lon.toFixed(3)}`}`;
+export function describeBirth(k: Kundli): string {
+  const t = to12h(k.datetime_local.slice(11, 19));
+  return `${k.datetime_local.slice(0, 10)} ${t.time} ${t.meridiem} · ${k.place || `${k.lat.toFixed(3)}, ${k.lon.toFixed(3)}`}`;
+}

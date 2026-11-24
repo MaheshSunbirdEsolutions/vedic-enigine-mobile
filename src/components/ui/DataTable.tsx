@@ -1,5 +1,5 @@
-import { StyleSheet, View } from "react-native";
-import { colors } from "@/theme";
+import { View } from "react-native";
+import { makeStyles } from "@/theme";
 import { Text } from "./Text";
 
 export type Column<T> = { key: string; label: string; flex?: number; render: (row: T) => React.ReactNode };
@@ -8,6 +8,7 @@ export type Column<T> = { key: string; label: string; flex?: number; render: (ro
 export function DataTable<T>({ columns, rows, rowKey, highlight }: {
   columns: Column<T>[]; rows: T[]; rowKey: (r: T, i: number) => string; highlight?: (r: T) => boolean;
 }) {
+  const styles = useStyles();
   return (
     <View style={styles.table}>
       <View style={[styles.row, styles.head]}>
@@ -29,11 +30,11 @@ export function DataTable<T>({ columns, rows, rowKey, highlight }: {
   );
 }
 
-const styles = StyleSheet.create({
-  table: { borderTopWidth: 1, borderColor: colors.line },
-  head: { borderBottomColor: colors.line },
-  row: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: colors.lineSoft, paddingVertical: 7 },
-  hl: { backgroundColor: colors.accentSoft },
+const useStyles = makeStyles((t) => ({
+  table: { borderTopWidth: 1, borderColor: t.colors.line },
+  head: { borderBottomColor: t.colors.line },
+  row: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: t.colors.lineSoft, paddingVertical: 7 },
+  hl: { backgroundColor: t.colors.accentSoft },
   cell: { paddingHorizontal: 4, justifyContent: "center" },
   text: { fontSize: 14 },
-});
+}));

@@ -29,7 +29,7 @@ describe("birth", () => {
   });
   it("describes a kundli", () => {
     expect(describeBirth({ name: "A", datetime_local: "1980-12-27T22:46:00", tz: "Asia/Kolkata", lat: 31.7, lon: 76.9, place: "Mandi" }))
-      .toBe("1980-12-27 22:46 · Mandi");
+      .toBe("1980-12-27 10:46 PM · Mandi");
   });
 });
 

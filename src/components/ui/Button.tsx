@@ -1,5 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
-import { colors, radius, spacing } from "@/theme";
+import { ActivityIndicator, Pressable, type StyleProp, type ViewStyle } from "react-native";
+import { makeStyles, radius, spacing, useTheme, type Theme } from "@/theme";
 import { Text } from "./Text";
 
 type Variant = "primary" | "light" | "danger" | "ghost";
@@ -14,8 +14,16 @@ export type ButtonProps = {
   testID?: string;
 };
 
+const variantColors = (t: Theme, v: Variant) => ({
+  primary: { bg: t.colors.accent, fg: t.colors.onAccent },
+  light: { bg: t.colors.buttonLight, fg: t.colors.ink },
+  danger: { bg: t.colors.badSoft, fg: t.colors.bad },
+  ghost: { bg: "transparent", fg: t.colors.accent },
+})[v];
+
 export function Button({ label, onPress, variant = "primary", disabled, loading, style, testID }: ButtonProps) {
-  const v = VARIANTS[variant];
+  const s = useStyles();
+  const v = variantColors(useTheme(), variant);
   const inactive = disabled || loading;
   return (
     <Pressable
@@ -24,23 +32,16 @@ export function Button({ label, onPress, variant = "primary", disabled, loading,
       accessibilityState={{ disabled: !!inactive, busy: !!loading }}
       onPress={onPress}
       disabled={inactive}
-      style={({ pressed }) => [styles.base, { backgroundColor: v.bg }, pressed && styles.pressed, inactive && styles.disabled, style]}
+      style={({ pressed }) => [s.base, { backgroundColor: v.bg }, pressed && s.pressed, inactive && s.disabled, style]}
     >
-      {loading ? <ActivityIndicator color={v.fg} size="small" /> : <Text style={[styles.label, { color: v.fg }]}>{label}</Text>}
+      {loading ? <ActivityIndicator color={v.fg} size="small" /> : <Text style={[s.label, { color: v.fg }]}>{label}</Text>}
     </Pressable>
   );
 }
 
-const VARIANTS: Record<Variant, { bg: string; fg: string }> = {
-  primary: { bg: colors.accent, fg: colors.white },
-  light: { bg: colors.buttonLight, fg: colors.ink },
-  danger: { bg: colors.badSoft, fg: colors.bad },
-  ghost: { bg: "transparent", fg: colors.accent },
-};
-
-const styles = StyleSheet.create({
+const useStyles = makeStyles(() => ({
   base: { minHeight: 44, paddingHorizontal: spacing.lg, borderRadius: radius.sm, alignItems: "center", justifyContent: "center" },
   label: { fontWeight: "600" },
   pressed: { opacity: 0.85 },
   disabled: { opacity: 0.5 },
-});
+}));
