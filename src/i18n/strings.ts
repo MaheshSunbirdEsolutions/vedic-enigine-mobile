@@ -1,0 +1,124 @@
+/**
+ * Strings that ship inside the app.
+ *
+ * Most UI text, all Jyotish terms and chart abbreviations come from the engine
+ * (GET /i18n/{lang}), exactly like the web app. Two local tables cover the rest:
+ *   - MOBILE: mobile-only keys, and keys whose web wording does not fit a phone.
+ *             These win over the engine bundle.
+ *   - FALLBACK: core keys needed before the bundle loads or when the engine is down.
+ */
+import type { Lang } from "@/types/api";
+
+type Table = Record<string, string>;
+
+export const MOBILE: Record<Lang, Table> = {
+  en: {
+    engine_down: "Cannot reach the Vedic Engine. Check that it is running and that the engine URL in Settings is reachable from this phone.",
+    err_timeout: "The engine took too long to answer. Try again.",
+    err_aborted: "Request cancelled.",
+    err_parse: "The engine sent a reply the app could not read.",
+    err_server: "The engine hit an error. Try again in a moment.",
+    err_validation: "Some details were not accepted. Check the birth data.",
+    err_unknown: "Something went wrong.",
+    retry: "Try again",
+    nav_settings: "Settings",
+    settings_language: "Language",
+    settings_chart_style: "Chart style",
+    settings_engine: "Engine",
+    settings_engine_url: "Engine URL",
+    settings_engine_default: "Default from build",
+    settings_engine_reset: "Use default",
+    settings_engine_save: "Save URL",
+    settings_engine_invalid: "Enter a URL starting with http:// or https://",
+    settings_test: "Test connection",
+    settings_ok: "Connected",
+    settings_env: "Environment",
+    settings_version: "Version",
+    more_reports_web: "The other reports (life story, year-wise, issues, Lal Kitab, Bhrigu…) are on the web app.",
+    open_on_web: "Open on web",
+    no_results: "No matching kundlis.",
+    pick_date: "Pick date",
+    pick_time: "Pick time",
+    date_ph: "YYYY-MM-DD",
+    time_ph: "HH:MM:SS",
+    kundli_deleted: "Kundli deleted.",
+    pull_refresh: "Pull to refresh",
+    person_pick: "Pick a person",
+    ask_history_cleared: "History cleared.",
+    no_places: "No places found.",
+    err_date_format: "Use the format YYYY-MM-DD.",
+    err_time_format: "Use HH:MM or HH:MM:SS (24-hour).",
+    err_lat: "Between -90 and 90.",
+    err_lon: "Between -180 and 180.",
+    err_tz: "An IANA zone, e.g. Asia/Kolkata.",
+  },
+  hi: {
+    engine_down: "वैदिक इंजन से संपर्क नहीं हो पा रहा। देखें कि इंजन चल रहा है और सेटिंग्स में दिया इंजन URL इस फ़ोन से पहुँच में है।",
+    err_timeout: "इंजन ने जवाब देने में बहुत समय लिया। फिर कोशिश करें।",
+    err_aborted: "अनुरोध रद्द हुआ।",
+    err_parse: "इंजन का जवाब पढ़ा नहीं जा सका।",
+    err_server: "इंजन में त्रुटि हुई। थोड़ी देर बाद फिर कोशिश करें।",
+    err_validation: "कुछ विवरण स्वीकार नहीं हुए। जन्म विवरण जाँचें।",
+    err_unknown: "कुछ गड़बड़ हो गई।",
+    retry: "फिर कोशिश करें",
+    nav_settings: "सेटिंग्स",
+    settings_language: "भाषा",
+    settings_chart_style: "कुंडली शैली",
+    settings_engine: "इंजन",
+    settings_engine_url: "इंजन URL",
+    settings_engine_default: "बिल्ड का डिफ़ॉल्ट",
+    settings_engine_reset: "डिफ़ॉल्ट रखें",
+    settings_engine_save: "URL सहेजें",
+    settings_engine_invalid: "http:// या https:// से शुरू होने वाला URL लिखें",
+    settings_test: "कनेक्शन जाँचें",
+    settings_ok: "जुड़ा हुआ",
+    settings_env: "परिवेश",
+    settings_version: "संस्करण",
+    more_reports_web: "बाकी रिपोर्ट (जीवन कथा, वर्षफल, समस्याएँ, लाल किताब, भृगु…) वेब ऐप पर हैं।",
+    open_on_web: "वेब पर खोलें",
+    no_results: "कोई मिलती कुंडली नहीं।",
+    pick_date: "तिथि चुनें",
+    pick_time: "समय चुनें",
+    date_ph: "YYYY-MM-DD",
+    time_ph: "HH:MM:SS",
+    kundli_deleted: "कुंडली हटा दी गई।",
+    pull_refresh: "ताज़ा करने के लिए खींचें",
+    person_pick: "व्यक्ति चुनें",
+    ask_history_cleared: "इतिहास साफ़ हुआ।",
+    no_places: "कोई स्थान नहीं मिला।",
+    err_date_format: "YYYY-MM-DD रूप में लिखें।",
+    err_time_format: "HH:MM या HH:MM:SS (24 घंटे) रूप में लिखें।",
+    err_lat: "-90 से 90 के बीच।",
+    err_lon: "-180 से 180 के बीच।",
+    err_tz: "IANA समय क्षेत्र, जैसे Asia/Kolkata।",
+  },
+};
+
+export const FALLBACK: Record<Lang, Table> = {
+  en: {
+    loading: "Loading…", nav_home: "Kundlis", nav_panchang: "Panchang", nav_match: "Matching",
+    saved_kundlis: "Saved kundlis", new_kundli: "New kundli", not_found: "Kundli not found.",
+    tab_chart: "Chart", tab_dasha: "Dasha", tab_interp: "Interpretation", tab_sade: "Sade Sati",
+    tab_reports: "Reports", tab_ask: "Ask", search: "Search name, place or tag…",
+    no_saved: "No saved kundlis yet. Generate one and save it.", delete: "Delete", cancel: "Cancel",
+    save: "Save kundli", update: "Save changes", edit: "Edit details", open: "Open",
+    confirm_delete: "Delete this kundli?", generate: "Generate kundli",
+    err_dt: "Please enter date and time of birth.", err_place: "Please choose a birth place (or enter coordinates and time zone under Advanced).",
+    none: "None",
+  },
+  hi: {
+    loading: "लोड हो रहा है…", nav_home: "कुंडलियाँ", nav_panchang: "पंचांग", nav_match: "गुण मिलान",
+    saved_kundlis: "सहेजी गई कुंडलियाँ", new_kundli: "नई कुंडली", not_found: "कुंडली नहीं मिली।",
+    tab_chart: "कुंडली", tab_dasha: "दशा", tab_interp: "फलादेश", tab_sade: "साढ़ेसाती",
+    tab_reports: "रिपोर्ट", tab_ask: "प्रश्न पूछें", search: "नाम, स्थान या टैग खोजें…",
+    no_saved: "अभी कोई सहेजी कुंडली नहीं। कुंडली बनाकर सहेजें।", delete: "हटाएँ", cancel: "रद्द करें",
+    save: "कुंडली सहेजें", update: "बदलाव सहेजें", edit: "विवरण बदलें", open: "खोलें",
+    confirm_delete: "यह कुंडली हटाएँ?", generate: "कुंडली बनाएँ",
+    err_dt: "कृपया जन्म तिथि और समय भरें।", err_place: "कृपया जन्म स्थान चुनें (या उन्नत विकल्प में निर्देशांक और समय क्षेत्र भरें)।",
+    none: "कोई नहीं",
+  },
+};
+
+export const ABBR_EN: Record<string, string> = {
+  Sun: "Su", Moon: "Mo", Mars: "Ma", Mercury: "Me", Jupiter: "Ju", Venus: "Ve", Saturn: "Sa", Rahu: "Ra", Ketu: "Ke",
+};
