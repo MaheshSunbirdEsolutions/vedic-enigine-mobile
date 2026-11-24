@@ -1,6 +1,6 @@
 /** Calculation queries. Each takes birth data and returns a React Query result. */
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { engineApi, queryKeys } from "@/api";
+import { engineApi, queryKeys, type ReportId } from "@/api";
 import { birthOf, nowIn, todayIn } from "@/domain/birth";
 import type { Birth, Chart, Dasha, Lang, PanchangRequest, SadeSati } from "@/types/api";
 
@@ -71,4 +71,26 @@ export function useMatch() {
   return useMutation({
     mutationFn: ({ groom, bride }: { groom: Birth; bride: Birth }) => engineApi.astro.match(birthOf(groom), birthOf(bride)),
   });
+}
+
+/**
+ * One detailed report (POST /report/<id>) for a year, as of now in the birth zone.
+ * Switching language keeps the previous text on screen until the new one arrives.
+ */
+export function useReport<T = unknown>(id: ReportId, k: Birth, lang: Lang, year: number, enabled = true) {
+  const b = birthOf(k);
+  const day = todayIn(b.tz);
+  const queryKey = queryKeys.report(id, b, lang, year, day);
+  return useQuery({
+    queryKey,
+    queryFn: ({ signal }) => engineApi.reports.raw<T>(id, { ...b, lang, year, at: nowIn(b.tz) }, { signal }),
+    placeholderData: (prev, prevQuery) => keepAcrossLanguage(prev, prevQuery, queryKey, 2),
+    staleTime: 30 * 60_000,
+    enabled,
+  });
+}
+
+/** Which scanned book pages exist on the engine (used for "view page" links). */
+export function useBookStatus() {
+  return useQuery({ queryKey: queryKeys.bookStatus, queryFn: ({ signal }) => engineApi.reports.bookStatus({ signal }), staleTime: Infinity, retry: false });
 }

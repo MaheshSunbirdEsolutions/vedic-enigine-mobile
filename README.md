@@ -8,13 +8,15 @@ from the engine, so English / हिन्दी work the same way on both.
 |---|---|
 | **Kundlis** | Saved kundlis: search, pull to refresh, tap to open, long-press to delete, **+ New kundli** |
 | **New kundli** | Name, gender, date, 12-hour time with AM/PM, place search (offline GeoNames), advanced: coordinates, time zone, ayanamsa, node, tags, notes |
-| **Kundli** | Save / edit / delete, and tabs: **Chart** (D1 + D9, North or South Indian, planet and house tables) · **Dasha** (MD → AD → PD, running periods open) · **Interpretation** · **Sade Sati** · **Reports** (Simple summary) · **Ask** (offline or AI answers, history kept on the phone) |
+| **Kundli** | Save / edit / delete, and tabs: **Chart** (D1 + D9, North or South Indian, planet and house tables) · **Dasha** (MD → AD → PD, running periods open) · **Interpretation** · **Sade Sati** · **Reports** (all 12, with year and expand-all) · **Ask** (offline or AI answers, history kept on the phone) |
 | **Panchang** | Any date and place |
 | **Matching** | Ashtakoota for two people, from saved kundlis or new birth details |
 | **Settings** | Language, appearance (System / Light / Dark), chart style, engine URL (with a connection test) |
 
-The other reports (life story, year-wise, issues, Lal Kitab, Bhrigu…) are on the web app
-for now; the Reports tab links to the same kundli there when `EXPO_PUBLIC_WEB_URL` is set.
+The Reports tab has all 12 reports of the web app: simple summary, life-long prediction, year-wise
+prediction, current issues & remedies, dosha analysis, full kundli, life areas, varshphal, Lal Kitab,
+nakshatra & remedy muhurta, temples & tantra, and Bhrigu Samhita. Book page links open the scanned
+pages served by the engine.
 
 ## Run it
 
@@ -49,7 +51,6 @@ For the **web** target (`npm run web`) the browser enforces CORS, so start the e
 | Variable | Default | Purpose |
 |---|---|---|
 | `EXPO_PUBLIC_ENGINE_URL` | `http://127.0.0.1:8000` | Vedic Engine base URL |
-| `EXPO_PUBLIC_WEB_URL` | – | Web app base URL, for "Open on web" |
 | `EXPO_PUBLIC_API_TIMEOUT_MS` | `60000` | Request timeout (AI answers get 120 s) |
 | `EXPO_PUBLIC_APP_ENV` | `development` | `development` / `staging` / `production`, shown in Settings |
 

@@ -10,7 +10,9 @@ export type ReportId =
 
 export const reportEndpoints = (c: HttpClient) => ({
   simple: (r: ReportRequest, o: Opt = {}) => c.request<SimpleReport>("/report/simple", { body: r, signal: o.signal }),
-  /** Untyped access to the other reports (rendered on the web app for now). */
+  /** The detailed reports (payloads are rendered by components/reports). */
   raw: <T = unknown>(id: ReportId, r: ReportRequest, o: Opt = {}) =>
     c.request<T>(`/report/${id}`, { body: r, signal: o.signal }),
+  /** How many scanned book pages the engine has (Lal Kitab, Bhrigu Samhita). */
+  bookStatus: (o: Opt = {}) => c.request<{ lalkitab: number; bhrigu: number }>("/books/status", { signal: o.signal }),
 });

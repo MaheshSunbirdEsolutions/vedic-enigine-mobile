@@ -17,8 +17,8 @@ export const navigationTheme = (t: Theme) => ({
   tabBar: {
     tabBarActiveTintColor: t.colors.accent,
     tabBarInactiveTintColor: t.colors.muted,
-    tabBarStyle: { backgroundColor: t.colors.card, borderTopColor: t.colors.line, borderTopWidth: 0.5, height: 66, paddingTop: 8 },
-    tabBarLabelStyle: { fontFamily: t.fonts.semibold, fontSize: 11.5, marginTop: 2 },
+    tabBarStyle: { backgroundColor: t.colors.card, borderTopColor: t.colors.line, borderTopWidth: 0.5, paddingTop: 8 },
+    tabBarLabelStyle: { fontFamily: t.fonts.semibold, fontSize: 11.5, lineHeight: Math.round(17 * t.fonts.lineScale), marginTop: 2 },
     animation: "shift" as const,
   },
   content: { backgroundColor: t.colors.bg },

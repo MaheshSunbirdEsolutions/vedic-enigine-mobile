@@ -34,8 +34,6 @@ export const MOBILE: Record<Lang, Table> = {
     settings_ok: "Connected",
     settings_env: "Environment",
     settings_version: "Version",
-    more_reports_web: "The other reports (life story, year-wise, issues, Lal Kitab, Bhrigu…) are on the web app.",
-    open_on_web: "Open on web",
     no_results: "No matching kundlis.",
     pick_date: "Pick date",
     pick_time: "Pick time",
@@ -79,8 +77,6 @@ export const MOBILE: Record<Lang, Table> = {
     settings_ok: "जुड़ा हुआ",
     settings_env: "परिवेश",
     settings_version: "संस्करण",
-    more_reports_web: "बाकी रिपोर्ट (जीवन कथा, वर्षफल, समस्याएँ, लाल किताब, भृगु…) वेब ऐप पर हैं।",
-    open_on_web: "वेब पर खोलें",
     no_results: "कोई मिलती कुंडली नहीं।",
     pick_date: "तिथि चुनें",
     pick_time: "समय चुनें",
@@ -115,6 +111,8 @@ export const FALLBACK: Record<Lang, Table> = {
     confirm_delete: "Delete this kundli?", generate: "Generate kundli",
     err_dt: "Please enter date and time of birth.", err_place: "Please choose a birth place (or enter coordinates and time zone under Advanced).",
     none: "None",
+    no: "No",
+    yes: "Yes",
   },
   hi: {
     loading: "लोड हो रहा है…", nav_home: "कुंडलियाँ", nav_panchang: "पंचांग", nav_match: "गुण मिलान",
@@ -126,6 +124,8 @@ export const FALLBACK: Record<Lang, Table> = {
     confirm_delete: "यह कुंडली हटाएँ?", generate: "कुंडली बनाएँ",
     err_dt: "कृपया जन्म तिथि और समय भरें।", err_place: "कृपया जन्म स्थान चुनें (या उन्नत विकल्प में निर्देशांक और समय क्षेत्र भरें)।",
     none: "कोई नहीं",
+    no: "नहीं",
+    yes: "हाँ",
   },
 };
 

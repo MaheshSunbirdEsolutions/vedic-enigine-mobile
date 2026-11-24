@@ -69,6 +69,27 @@ d("engine contract", () => {
     expect(typeof (await api.ask.status()).ai).toBe("boolean");
   });
 
+  it.each([
+    ["lifelong", ["overview", "journey", "milestones", "life_areas", "story"]],
+    ["yearly", ["year", "summary", "areas", "periods", "transits", "months", "years"]],
+    ["issues", ["issues", "remedy_days", "health_watch", "rin", "natal_afflictions"]],
+    ["full", ["chart", "bhavas", "placements", "jaimini", "ashtakavarga", "dasha", "interpretation", "afflictions", "remedy_plan"]],
+    ["life-areas", ["areas"]],
+    ["varshphal", ["year", "tithi_pravesha", "lal_kitab", "age", "bhav_names"]],
+    ["lal-kitab", ["planets", "varshphal", "empty_houses", "quick", "rin"]],
+    ["nakshatra", ["janma_nakshatra", "taras", "birth_doshas", "remedy_days"]],
+    ["tirtha", ["suggested", "directory", "tantra"]],
+    ["bhrigu", ["lagna", "readings", "source"]],
+  ] as const)("report %s has the fields the app renders", async (id, keys) => {
+    const r = await api.reports.raw<Record<string, unknown>>(id, { ...birth, lang: "hi", year: 2026, at });
+    for (const k of keys) expect(r).toHaveProperty(k);
+  });
+
+  it("book page status", async () => {
+    const b = await api.reports.bookStatus();
+    expect(typeof b.lalkitab).toBe("number");
+  });
+
   it("saved kundli lifecycle and error mapping", async () => {
     const created = await api.kundlis.create({ ...birth, name: "Contract test" });
     expect(created.id).toBeTruthy();

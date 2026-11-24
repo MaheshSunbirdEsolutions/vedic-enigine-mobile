@@ -16,6 +16,9 @@ export const queryKeys = {
   chartBundle: (b: Birth) => ["chart-bundle", ...birthKey(b)] as const,
   interpretation: (b: Birth, lang: Lang) => ["interpret", lang, ...birthKey(b)] as const,
   simpleReport: (b: Birth, lang: Lang, day: string) => ["report", "simple", lang, day, ...birthKey(b)] as const,
+  /** Detailed reports; the language sits at index 2 (see keepAcrossLanguage). */
+  report: (id: string, b: Birth, lang: Lang, year: number, day: string) => ["report", id, lang, year, day, ...birthKey(b)] as const,
+  bookStatus: ["books-status"] as const,
   panchang: (day: string, lat: number, lon: number, tz: string) => ["panchang", day, lat, lon, tz] as const,
   match: (g: Birth, b: Birth) => ["match", ...birthKey(g), ...birthKey(b)] as const,
   places: (q: string) => ["places", q] as const,
