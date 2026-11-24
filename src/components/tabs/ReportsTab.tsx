@@ -21,7 +21,7 @@ export function ReportsTab({ kundli }: { kundli: Kundli }) {
       </QueryView>
       <Card>
         <Text variant="muted">{t("more_reports_web")}</Text>
-        {webLink && <Button variant="light" label={t("open_on_web")} onPress={() => void Linking.openURL(webLink)} />}
+        {webLink && <Button variant="secondary" label={t("open_on_web")} onPress={() => void Linking.openURL(webLink)} />}
       </Card>
     </View>
   );

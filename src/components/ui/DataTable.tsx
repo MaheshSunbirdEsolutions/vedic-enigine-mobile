@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { makeStyles } from "@/theme";
+import { makeStyles, radius, spacing, useTheme } from "@/theme";
 import { Text } from "./Text";
 
 export type Column<T> = { key: string; label: string; flex?: number; render: (row: T) => React.ReactNode };
@@ -9,13 +9,14 @@ export function DataTable<T>({ columns, rows, rowKey, highlight }: {
   columns: Column<T>[]; rows: T[]; rowKey: (r: T, i: number) => string; highlight?: (r: T) => boolean;
 }) {
   const styles = useStyles();
+  const t = useTheme();
   return (
-    <View style={styles.table}>
+    <View style={[styles.table, t.shadow]}>
       <View style={[styles.row, styles.head]}>
-        {columns.map((c) => <Text key={c.key} variant="small" style={[styles.cell, { flex: c.flex ?? 1 }]}>{c.label}</Text>)}
+        {columns.map((c) => <Text key={c.key} variant="label" style={[styles.cell, { flex: c.flex ?? 1 }]}>{c.label}</Text>)}
       </View>
       {rows.map((r, i) => (
-        <View key={rowKey(r, i)} style={[styles.row, highlight?.(r) && styles.hl]}>
+        <View key={rowKey(r, i)} style={[styles.row, i === rows.length - 1 && styles.last, highlight?.(r) && styles.hl]}>
           {columns.map((c) => {
             const v = c.render(r);
             return (
@@ -31,10 +32,14 @@ export function DataTable<T>({ columns, rows, rowKey, highlight }: {
 }
 
 const useStyles = makeStyles((t) => ({
-  table: { borderTopWidth: 1, borderColor: t.colors.line },
-  head: { borderBottomColor: t.colors.line },
-  row: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: t.colors.lineSoft, paddingVertical: 7 },
+  table: {
+    backgroundColor: t.colors.card, borderRadius: radius.lg, overflow: "hidden",
+    borderWidth: t.dark ? 1 : 0.5, borderColor: t.dark ? t.colors.line : t.colors.lineSoft,
+  },
+  head: { backgroundColor: t.colors.fill, paddingVertical: 9 },
+  row: { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: t.colors.line, paddingVertical: 10, paddingHorizontal: spacing.sm },
+  last: { borderBottomWidth: 0 },
   hl: { backgroundColor: t.colors.accentSoft },
   cell: { paddingHorizontal: 4, justifyContent: "center" },
-  text: { fontSize: 14 },
+  text: { fontSize: 14, lineHeight: Math.round(20 * t.fonts.lineScale) },
 }));

@@ -3,7 +3,7 @@ import { Chip, DataTable, Stat, StatRow, Text, type Column } from "@/components/
 import { humanize } from "@/domain/format";
 import { isAcceptable, matchDoshas } from "@/domain/match";
 import { useI18n } from "@/i18n/I18nProvider";
-import { font, makeStyles } from "@/theme";
+import { makeStyles } from "@/theme";
 import type { Koota, MatchResult } from "@/types/api";
 
 type Row = Koota & { key: string };
@@ -38,9 +38,9 @@ export function MatchResultView({ m }: { m: MatchResult }) {
 }
 
 const useStyles = makeStyles((t) => ({
-  b: { fontWeight: "600", fontSize: 14 },
-  big: { fontSize: font.size.xxl, fontWeight: "700", color: t.colors.accent, lineHeight: 42 },
-  max: { fontSize: 18, color: t.colors.muted, fontWeight: "400" },
+  b: { fontFamily: t.fonts.semibold, fontSize: 14 },
+  big: { fontSize: 40, fontFamily: t.fonts.bold, color: t.colors.accent, lineHeight: 42 },
+  max: { fontSize: 18, color: t.colors.muted, fontFamily: t.fonts.regular },
   chips: { flexDirection: "row", flexWrap: "wrap" },
   note: { marginTop: 12 },
 }));

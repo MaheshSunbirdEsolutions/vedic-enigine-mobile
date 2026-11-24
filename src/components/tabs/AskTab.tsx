@@ -101,5 +101,5 @@ const useStyles = makeStyles((t) => ({
   chips: { flexDirection: "row", flexWrap: "wrap" },
   item: { borderTopWidth: 1, borderTopColor: t.colors.line, paddingTop: spacing.md, marginTop: spacing.md },
   ref: { marginBottom: 6, fontSize: 14 },
-  bold: { fontWeight: "600" },
+  bold: { fontFamily: t.fonts.semibold },
 }));

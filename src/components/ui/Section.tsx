@@ -1,20 +1,21 @@
 import type { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
-import { spacing } from "@/theme";
+import { View } from "react-native";
+import { makeStyles, spacing } from "@/theme";
 import { Text } from "./Text";
 
 /** Heading + content block inside a tab or report. */
 export function Section({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
+  const s = useStyles();
   return (
-    <View style={styles.wrap}>
-      <View style={styles.head}><Text variant="heading" style={styles.title}>{title}</Text>{right}</View>
+    <View style={s.wrap}>
+      <View style={s.head}><Text variant="heading" style={s.title}>{title}</Text>{right}</View>
       {children}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { marginTop: spacing.md, marginBottom: spacing.sm },
-  head: { flexDirection: "row", alignItems: "center", marginBottom: spacing.sm },
+const useStyles = makeStyles(() => ({
+  wrap: { marginTop: spacing.lg, marginBottom: spacing.sm },
+  head: { flexDirection: "row", alignItems: "center", marginBottom: spacing.md },
   title: { flex: 1 },
-});
+}));

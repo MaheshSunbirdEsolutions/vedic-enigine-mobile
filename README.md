@@ -115,6 +115,17 @@ Rules the code follows:
 - **Theming.** The app follows the device's light/dark mode unless the user picks one in Settings.
   Components never hard-code colours: they use `makeStyles((t) => ({ … t.colors.card … }))` or
   `useTheme()`. The `src/theme` folder can be copied into another app as is.
+- **Typography.** Fraunces (display) + Plus Jakarta Sans (UI) for English, Mukta for Hindi, loaded with
+  `expo-font` before the splash hides. Use `<Text variant weight>`; never `fontWeight` (custom fonts need a
+  family per weight). Type sizes are in `theme/tokens.ts` (`typeScale`).
+- **Motion.** Reanimated: every tappable is a `PressableScale` (spring + light haptic), the segmented
+  control thumb slides, screens slide in (stack) or shift (tabs), and tab content cross-fades
+  (`FadeSwitch`). Durations and the spring live in `theme/tokens.ts` (`motion`).
+- **Language switch.** `LanguageSwitch` sits in every header. Both language bundles are prefetched; switching
+  dims the app, swaps the language and fonts, and fades back in. Translated data (interpretation, reports)
+  keeps the previous language on screen until the new one arrives, so nothing flashes to a skeleton.
+- **Keyboard.** `Screen` is a `KeyboardAwareScrollView` (react-native-keyboard-controller), so the focused
+  field always sits above the keyboard on iOS and Android.
 - **Forms.** react-hook-form with a zod schema from `domain/` (`birthFormSchema`). Errors show after a
   field is left or on submit, and disappear as soon as the value becomes valid. Messages are i18n keys.
 - **Errors.** All failures become an `ApiError`; `errorMessageKey()` turns it into a
@@ -141,7 +152,7 @@ builds (`npx expo run:android`, or `npx eas-cli@latest build`).
 
 ## Tests
 
-93 tests: 87 run with `npm test`, plus the 6-test contract suite that needs a running engine.
+98 tests: 92 run with `npm test`, plus the 6-test contract suite that needs a running engine.
 
 - **Unit** – env parsing, HTTP client (timeouts, cancel, FastAPI error parsing), endpoints,
   form schema and 12-hour time, theme (device mode, contrast, style caching), chart/dasha logic, formatting, translator, retry policy.

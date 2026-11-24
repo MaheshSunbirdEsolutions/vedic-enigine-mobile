@@ -38,7 +38,7 @@ export function TimeField12({ label, time, meridiem, onChange, onBlur, error, te
             onChange={(m) => onChange(time, m)} segments={[{ value: "AM", label: "AM" }, { value: "PM", label: "PM" }]} />
         </View>
       </View>
-      {native && <Button variant="light" label={t("pick_time")} onPress={() => setOpen(true)} style={styles.pick} />}
+      {native && <Button variant="secondary" label={t("pick_time")} onPress={() => setOpen(true)} style={styles.pick} />}
       {native && open && (
         <DateTimePicker
           value={toPickerDate12("2000-01-01", time, meridiem)}

@@ -10,6 +10,10 @@ export type Palette = {
   neutralSoft: string; buttonLight: string; panel: string;
   chartBg: string; chartLine: string; chartLabel: string;
   shimmerBase: string; toastBg: string; toastText: string; overlay: string;
+  /** Filled inputs, segmented tracks, secondary buttons. */
+  fill: string;
+  /** Second stop of the brand gradient (hero cards, avatars, primary buttons). */
+  accentDeep: string;
 };
 
 export const lightPalette: Palette = {
@@ -19,6 +23,7 @@ export const lightPalette: Palette = {
   neutralSoft: "#f0ece6", buttonLight: "#f4eee7", panel: "#fbf7f1",
   chartBg: "#fffdf9", chartLine: "#c9b9a6", chartLabel: "#b39a82",
   shimmerBase: "#efe7dd", toastBg: "#2b2420", toastText: "#ffffff", overlay: "rgba(43,36,32,0.4)",
+  fill: "#f3ece4", accentDeep: "#a4431a",
 };
 
 export const darkPalette: Palette = {
@@ -28,4 +33,5 @@ export const darkPalette: Palette = {
   neutralSoft: "#2c251f", buttonLight: "#2c251f", panel: "#1b1612",
   chartBg: "#1b1612", chartLine: "#5c4c3e", chartLabel: "#a08a74",
   shimmerBase: "#2e2620", toastBg: "#f2eae1", toastText: "#15110e", overlay: "rgba(0,0,0,0.55)",
+  fill: "#2a231d", accentDeep: "#c4622a",
 };

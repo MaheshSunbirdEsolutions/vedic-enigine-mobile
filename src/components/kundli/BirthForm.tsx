@@ -12,10 +12,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, type FieldErrors } from "react-hook-form";
 import { DateField } from "@/components/form/DateField";
 import { TimeField12 } from "@/components/form/TimeField12";
-import { Button, SegmentedControl, Text, TextField } from "@/components/ui";
+import { Button, Icon, SegmentedControl, Text, TextField } from "@/components/ui";
 import { birthFormSchema, defaultBirthValues, placeFields, toKundli, type BirthFormValues } from "@/domain/birthForm";
 import { useI18n } from "@/i18n/I18nProvider";
-import { makeStyles, spacing } from "@/theme";
+import { makeStyles, spacing, useTheme } from "@/theme";
 import type { Ayanamsa, Gender, Kundli, NodeType } from "@/types/api";
 import { PlaceSearch } from "./PlaceSearch";
 
@@ -32,6 +32,7 @@ const COORD_FIELDS = ["lat", "lon", "tz"] as const;
 export function BirthForm({ initial, onSubmit, submitLabel, onCancel, busy }: BirthFormProps) {
   const { t } = useI18n();
   const s = useStyles();
+  const theme = useTheme();
   const [advanced, setAdvanced] = useState(false);
   const { control, handleSubmit, setValue, trigger, formState: { errors, isSubmitted } } = useForm<BirthFormValues>({
     resolver: zodResolver(birthFormSchema),
@@ -87,7 +88,10 @@ export function BirthForm({ initial, onSubmit, submitLabel, onCancel, busy }: Bi
       )} />
 
       <Pressable onPress={() => setAdvanced((a) => !a)} accessibilityRole="button" testID="toggle-advanced">
-        <Text variant="muted" style={s.adv}>{advanced ? "▾" : "▸"} {t("advanced")}</Text>
+        <View style={s.advRow}>
+          <Icon name={advanced ? "chevron-down" : "chevron-forward"} size={16} color={theme.colors.muted} />
+          <Text variant="muted" weight="medium">{t("advanced")}</Text>
+        </View>
       </Pressable>
       {advanced && (
         <View>
@@ -127,15 +131,15 @@ export function BirthForm({ initial, onSubmit, submitLabel, onCancel, busy }: Bi
       <View style={s.actions}>
         <Button testID="submit-birth" label={submitLabel ?? t("generate")} loading={busy} style={s.flex}
           onPress={handleSubmit((v) => onSubmit(toKundli(v, initial?.id)), onInvalid)} />
-        {onCancel && <Button label={t("cancel")} variant="light" onPress={onCancel} />}
+        {onCancel && <Button label={t("cancel")} variant="secondary" onPress={onCancel} />}
       </View>
     </View>
   );
 }
 
-const useStyles = makeStyles((t) => ({
+const useStyles = makeStyles(() => ({
   row: { flexDirection: "row", gap: spacing.sm },
   flex: { flex: 1 },
-  adv: { color: t.colors.muted, marginBottom: spacing.md },
+  advRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: spacing.md, paddingVertical: 4 },
   actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm },
 }));

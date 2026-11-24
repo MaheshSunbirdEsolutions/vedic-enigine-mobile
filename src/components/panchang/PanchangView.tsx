@@ -1,12 +1,14 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { DataTable, Stat, StatRow, Text, type Column } from "@/components/ui";
 import { formatTime } from "@/domain/format";
 import { useI18n } from "@/i18n/I18nProvider";
+import { makeStyles } from "@/theme";
 import type { Panchang } from "@/types/api";
 
 type Limb = { key: string; value: string; ends: string };
 
 export function PanchangView({ p }: { p: Panchang }) {
+  const styles = useStyles();
   const { t, T, lang } = useI18n();
   const tm = (s: string) => formatTime(s, p.date, lang);
   const rows: Limb[] = [
@@ -34,7 +36,7 @@ export function PanchangView({ p }: { p: Panchang }) {
   );
 }
 
-const styles = StyleSheet.create({
-  b: { fontWeight: "600", fontSize: 14 },
+const useStyles = makeStyles((t) => ({
+  b: { fontFamily: t.fonts.semibold, fontSize: 14 },
   note: { marginTop: 12 },
-});
+}));

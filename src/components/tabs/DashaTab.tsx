@@ -43,6 +43,6 @@ const useStyles = makeStyles((t) => ({
   row: { paddingVertical: 9, paddingRight: 8, borderBottomWidth: 1, borderBottomColor: t.colors.lineSoft },
   cur: { backgroundColor: t.colors.accentSoft },
   lord: { fontSize: 15 },
-  b: { fontWeight: "600" },
+  b: { fontFamily: t.fonts.semibold },
   muted: { color: t.colors.muted },
 }));

@@ -26,8 +26,8 @@ export default function MatchScreen() {
   return (
     <Screen testID="match-screen">
       {saved.isError && <ErrorState error={saved.error} onRetry={() => void saved.refetch()} />}
-      <PersonPicker testID="groom" title={t("groom")} saved={saved.data ?? []} value={groom} onChange={change(setGroom)} />
-      <PersonPicker testID="bride" title={t("bride")} saved={saved.data ?? []} value={bride} onChange={change(setBride)} />
+      <PersonPicker testID="groom" icon="man-outline" title={t("groom")} saved={saved.data ?? []} value={groom} onChange={change(setGroom)} />
+      <PersonPicker testID="bride" icon="woman-outline" title={t("bride")} saved={saved.data ?? []} value={bride} onChange={change(setBride)} />
       <Button testID="run-match" label={t("match_btn")} onPress={run} loading={match.isPending} />
       <InlineError message={formErr} />
       {match.isPending && <SkeletonCards count={1} lines={6} />}

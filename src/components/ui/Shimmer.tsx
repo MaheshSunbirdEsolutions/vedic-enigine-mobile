@@ -105,9 +105,9 @@ const useStyles = makeStyles((t) => ({
   gap: { marginTop: spacing.sm },
   listRow: {
     flexDirection: "row", gap: spacing.md, alignItems: "center", padding: spacing.md, marginBottom: spacing.sm,
-    backgroundColor: t.colors.card, borderRadius: radius.md, borderWidth: 1, borderColor: t.colors.line,
+    backgroundColor: t.colors.card, borderRadius: radius.lg, borderWidth: t.dark ? 1 : 0.5, borderColor: t.dark ? t.colors.line : t.colors.lineSoft,
   },
-  card: { padding: spacing.lg, marginBottom: spacing.md, backgroundColor: t.colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: t.colors.line },
+  card: { padding: spacing.lg, marginBottom: spacing.md, backgroundColor: t.colors.card, borderRadius: radius.lg, borderWidth: t.dark ? 1 : 0.5, borderColor: t.dark ? t.colors.line : t.colors.lineSoft },
   statRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: spacing.md },
   chart: { borderRadius: radius.lg },
 }));

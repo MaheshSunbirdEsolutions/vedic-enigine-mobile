@@ -1,13 +1,14 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { Chip, Section, Text } from "@/components/ui";
 import { priorityTone, ratingTone } from "@/domain/tone";
 import { useI18n } from "@/i18n/I18nProvider";
-import { spacing } from "@/theme";
+import { makeStyles, spacing } from "@/theme";
 import type { SimpleReport } from "@/types/api";
 import { FindingCard } from "./FindingCard";
 
 /** "Simple summary" report: current period, this year, six months, priorities, remedy plans. */
 export function SimpleReportView({ report }: { report: SimpleReport }) {
+  const styles = useStyles();
   const { t, T } = useI18n();
   return (
     <View testID="simple-report">
@@ -44,10 +45,10 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   para: { marginBottom: spacing.sm, lineHeight: 23 },
   chips: { flexDirection: "row", flexWrap: "wrap" },
   item: { marginBottom: spacing.md },
-  bold: { fontWeight: "600" },
+  bold: { fontFamily: t.fonts.semibold },
   closing: { marginTop: spacing.lg },
-});
+}));

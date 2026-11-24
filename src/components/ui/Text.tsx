@@ -1,21 +1,36 @@
 import { Text as RNText, type TextProps } from "react-native";
-import { font, makeStyles } from "@/theme";
+import { makeStyles, typeScale, type FontWeightName, type Theme } from "@/theme";
 
-type Variant = "title" | "heading" | "subheading" | "body" | "muted" | "small" | "label";
+export type TextVariant = "hero" | "title" | "heading" | "subheading" | "body" | "muted" | "small" | "label";
 
-/** The only text component screens use, so typography and colour stay consistent. */
-export function Text({ variant = "body", style, ...rest }: TextProps & { variant?: Variant }) {
+/**
+ * The only text component screens use. Font family, size, line height and colour come from the
+ * theme, so the type follows the language (Latin or Devanagari) and light/dark mode.
+ * Use `weight` instead of fontWeight (custom fonts need a family per weight).
+ */
+export function Text({ variant = "body", weight, style, ...rest }: TextProps & { variant?: TextVariant; weight?: FontWeightName }) {
   const s = useStyles();
-  return <RNText {...rest} style={[s.base, s[variant], style]} />;
+  return <RNText {...rest} style={[s[variant], weight && s[`w_${weight}`], style]} />;
 }
 
+const v = (t: Theme, key: keyof typeof typeScale, family: string, color = t.colors.ink) => ({
+  fontFamily: family,
+  fontSize: typeScale[key].size,
+  lineHeight: Math.round(typeScale[key].line * t.fonts.lineScale),
+  color,
+});
+
 const useStyles = makeStyles((t) => ({
-  base: { color: t.colors.ink, fontSize: font.size.md, lineHeight: 22 },
-  title: { fontSize: font.size.xl, fontWeight: font.weight.bold, lineHeight: 26 },
-  heading: { fontSize: font.size.lg, fontWeight: font.weight.semibold, lineHeight: 24 },
-  subheading: { fontSize: font.size.md, fontWeight: font.weight.semibold },
-  body: {},
-  muted: { color: t.colors.muted, fontSize: 14, lineHeight: 20 },
-  small: { color: t.colors.muted, fontSize: font.size.sm, lineHeight: 18 },
-  label: { color: t.colors.muted, fontSize: font.size.sm, fontWeight: font.weight.semibold, marginBottom: 4 },
+  hero: { ...v(t, "hero", t.fonts.display), letterSpacing: t.script === "latin" ? -0.4 : 0 },
+  title: { ...v(t, "title", t.fonts.display), letterSpacing: t.script === "latin" ? -0.2 : 0 },
+  heading: v(t, "heading", t.fonts.display),
+  subheading: v(t, "subheading", t.fonts.semibold),
+  body: v(t, "body", t.fonts.regular),
+  muted: v(t, "muted", t.fonts.regular, t.colors.muted),
+  small: v(t, "small", t.fonts.medium, t.colors.muted),
+  label: { ...v(t, "label", t.fonts.semibold, t.colors.muted), letterSpacing: t.script === "latin" ? 0.4 : 0 },
+  w_regular: { fontFamily: t.fonts.regular },
+  w_medium: { fontFamily: t.fonts.medium },
+  w_semibold: { fontFamily: t.fonts.semibold },
+  w_bold: { fontFamily: t.fonts.bold },
 }));

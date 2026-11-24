@@ -1,17 +1,18 @@
-/** Saved kundlis: search, list, pull to refresh, long-press to delete, + new. */
+/** Saved kundlis: search, list, pull to refresh, long-press to delete, + new (floating button). */
 import { useCallback, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { KundliListItem } from "@/components/kundli/KundliListItem";
-import { Button, EmptyState, ErrorState, SkeletonList, Text, TextField, confirmAsync, useToast } from "@/components/ui";
+import { EmptyState, ErrorState, Fab, SkeletonList, Text, TextField, confirmAsync, useToast } from "@/components/ui";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useDeleteKundli, useKundliList } from "@/hooks/useKundlis";
 import { useI18n } from "@/i18n/I18nProvider";
-import { makeStyles, spacing, useTheme } from "@/theme";
+import { makeStyles, radius, spacing, useTheme } from "@/theme";
 import type { Kundli } from "@/types/api";
 
 export default function KundlisScreen() {
-  const styles = useStyles();
+  const s = useStyles();
   const { colors } = useTheme();
   const { t } = useI18n();
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function KundlisScreen() {
   const [search, setSearch] = useState("");
   const list = useKundliList(useDebouncedValue(search, 250));
   const del = useDeleteKundli();
+  const count = list.data?.length ?? 0;
 
   const open = useCallback((k: Kundli) => router.push({ pathname: "/kundli/[id]", params: { id: k.id! } }), [router]);
   const remove = useCallback(async (k: Kundli) => {
@@ -28,39 +30,51 @@ export default function KundlisScreen() {
 
   const header = (
     <View>
-      <View style={styles.titleRow}>
-        <Text variant="title" style={styles.flex}>{t("saved_kundlis")}</Text>
-        <Button testID="new-kundli" label={`+ ${t("new_kundli")}`} onPress={() => router.push("/kundli/new")} />
+      <View style={s.titleRow}>
+        <Text variant="hero" style={s.flex}>{t("saved_kundlis")}</Text>
+        {count > 0 && <View style={s.count}><Text weight="semibold" style={s.countText}>{count}</Text></View>}
       </View>
-      <TextField testID="kundli-search" value={search} onChangeText={setSearch} placeholder={t("search")} autoCorrect={false} clearButtonMode="while-editing" />
+      <TextField testID="kundli-search" icon="search" value={search} onChangeText={setSearch} placeholder={t("search")}
+        autoCorrect={false} clearButtonMode="while-editing" returnKeyType="search" />
       {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
     </View>
   );
 
   return (
-    <FlatList
-      testID="kundli-list"
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      data={list.data ?? []}
-      keyExtractor={(k) => k.id ?? k.datetime_local}
-      renderItem={({ item }) => <KundliListItem k={item} onPress={() => open(item)} onLongPress={() => void remove(item)} />}
-      ListHeaderComponent={header}
-      ListEmptyComponent={
-        list.isPending ? <SkeletonList /> : list.isError ? undefined : (
-          <EmptyState message={search.trim() ? t("no_results") : t("no_saved")}
-            action={search.trim() ? undefined : { label: t("new_kundli"), onPress: () => router.push("/kundli/new") }} />
-        )
-      }
-      refreshControl={<RefreshControl refreshing={list.isRefetching && !list.isPending} onRefresh={() => void list.refetch()} tintColor={colors.accent} colors={[colors.accent]} />}
-      keyboardShouldPersistTaps="handled"
-    />
+    <View style={s.root}>
+      <FlatList
+        testID="kundli-list"
+        style={s.root}
+        contentContainerStyle={s.content}
+        data={list.data ?? []}
+        keyExtractor={(k) => k.id ?? k.datetime_local}
+        renderItem={({ item, index }) => (
+          <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 40).duration(260)} layout={LinearTransition.springify().damping(18)}>
+            <KundliListItem k={item} onPress={() => open(item)} onLongPress={() => void remove(item)} />
+          </Animated.View>
+        )}
+        ListHeaderComponent={header}
+        ListEmptyComponent={
+          list.isPending ? <SkeletonList /> : list.isError ? undefined : (
+            <EmptyState title={search.trim() ? undefined : t("saved_kundlis")} message={search.trim() ? t("no_results") : t("no_saved")}
+              action={search.trim() ? undefined : { label: t("new_kundli"), icon: "add", onPress: () => router.push("/kundli/new") }} />
+          )
+        }
+        refreshControl={<RefreshControl refreshing={list.isRefetching && !list.isPending} onRefresh={() => void list.refetch()} tintColor={colors.accent} colors={[colors.accent]} />}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}
+      />
+      <Fab testID="new-kundli" icon="add" label={t("new_kundli")} onPress={() => router.push("/kundli/new")} />
+    </View>
   );
 }
 
 const useStyles = makeStyles((t) => ({
   root: { flex: 1, backgroundColor: t.colors.bg },
-  content: { padding: spacing.lg, paddingBottom: 48 },
-  titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.md },
+  content: { padding: spacing.lg, paddingBottom: 120 },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.lg, marginTop: spacing.xs },
   flex: { flex: 1 },
+  count: { backgroundColor: t.colors.accentSoft, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 2 },
+  countText: { color: t.colors.accent, fontSize: 13 },
 }));

@@ -1,17 +1,18 @@
 import { useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { KundliChart } from "@/components/kundli/KundliChart";
 import { Card, Chip, DataTable, SegmentedControl, Section, Stat, StatRow, Text, type Column } from "@/components/ui";
 import { labelsBySign, placementsFor, retrogrades } from "@/domain/chart";
 import { dignityTone } from "@/domain/tone";
 import { useI18n } from "@/i18n/I18nProvider";
 import { usePreferences } from "@/state/preferences";
-import { spacing } from "@/theme";
+import { makeStyles, spacing } from "@/theme";
 import type { Chart, HouseRow, PlanetPos } from "@/types/api";
 
 type PlanetRow = { name: string; p: PlanetPos; retro: boolean };
 
 export function ChartTab({ chart }: { chart: Chart }) {
+  const styles = useStyles();
   const { t, T, abbr, lang } = useI18n();
   const style = usePreferences((s) => s.chartStyle);
   const setStyle = usePreferences((s) => s.setChartStyle);
@@ -73,7 +74,7 @@ export function ChartTab({ chart }: { chart: Chart }) {
   );
 }
 
-const styles = StyleSheet.create({
-  b: { fontWeight: "600", fontSize: 14 },
+const useStyles = makeStyles((t) => ({
+  b: { fontFamily: t.fonts.semibold, fontSize: 14 },
   chips: { flexDirection: "row", flexWrap: "wrap", marginTop: spacing.xs },
-});
+}));

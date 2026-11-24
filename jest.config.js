@@ -7,6 +7,8 @@ const base = {
   preset: "jest-expo",
   moduleNameMapper: { "^@/(.*)$": "<rootDir>/src/$1" },
   setupFiles: ["<rootDir>/jest.setup.js"],
+  // Reanimated 4 / worklets run their web implementation under Jest.
+  resolver: "react-native-reanimated/jest/resolver",
 };
 module.exports = {
   projects: [

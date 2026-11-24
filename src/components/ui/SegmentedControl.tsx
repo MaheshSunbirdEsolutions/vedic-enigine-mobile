@@ -1,38 +1,83 @@
-import { Pressable, ScrollView, View } from "react-native";
-import { makeStyles, radius, spacing } from "@/theme";
+/**
+ * Options with one selected, and a thumb that slides to the selection (Reanimated, UI thread).
+ * `scroll` makes it a horizontal strip (kundli tabs); `size="sm"` is the compact header version.
+ */
+import { useCallback, useEffect, useRef, useState, type ComponentRef } from "react";
+import { ScrollView, View, type LayoutChangeEvent } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import { makeStyles, motion, radius, spacing, useTheme } from "@/theme";
+import { PressableScale } from "./PressableScale";
 import { Text } from "./Text";
 
 export type Segment<T extends string> = { value: T; label: string };
 
-/**
- * Row of options; one is selected. `scroll` makes it a horizontal strip
- * (used for the kundli tabs and report picker).
- */
-export function SegmentedControl<T extends string>({ segments, value, onChange, scroll, testID }: {
-  segments: Segment<T>[]; value: T; onChange: (v: T) => void; scroll?: boolean; testID?: string;
+export function SegmentedControl<T extends string>({ segments, value, onChange, scroll, size = "md", testID }: {
+  segments: Segment<T>[]; value: T; onChange: (v: T) => void; scroll?: boolean; size?: "md" | "sm"; testID?: string;
 }) {
   const s = useStyles();
-  const items = segments.map((seg) => {
-    const on = seg.value === value;
-    return (
-      <Pressable key={seg.value} testID={testID ? `${testID}-${seg.value}` : undefined} onPress={() => onChange(seg.value)}
-        accessibilityRole="tab" accessibilityState={{ selected: on }}
-        style={[s.item, on && s.on, !scroll && s.flex]}>
-        <Text style={[s.label, on && s.labelOn]} numberOfLines={1}>{seg.label}</Text>
-      </Pressable>
-    );
-  });
-  return scroll
-    ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.row} style={s.scroll}>{items}</ScrollView>
-    : <View style={s.row}>{items}</View>;
+  const t = useTheme();
+  const layouts = useRef<Record<string, { x: number; width: number }>>({});
+  const [ready, setReady] = useState(false);
+  const x = useSharedValue(0);
+  const w = useSharedValue(0);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+
+  const moveTo = useCallback((v: string, animate: boolean) => {
+    const l = layouts.current[v];
+    if (!l) return;
+    x.set(animate ? withSpring(l.x, motion.spring) : l.x);
+    w.set(animate ? withSpring(l.width, motion.spring) : l.width);
+    if (scroll) scrollRef.current?.scrollTo({ x: Math.max(0, l.x - 24), animated: animate });
+  }, [scroll, w, x]);
+
+  useEffect(() => { moveTo(value, ready); }, [value, ready, moveTo]);
+
+  const onItemLayout = (v: string) => (e: LayoutChangeEvent) => {
+    const { x: lx, width } = e.nativeEvent.layout;
+    layouts.current[v] = { x: lx, width };
+    if (v === value) moveTo(v, false);
+    if (Object.keys(layouts.current).length >= segments.length && !ready) setReady(true);
+  };
+
+  const thumb = useAnimatedStyle(() => ({ transform: [{ translateX: x.get() }], width: w.get() }));
+  const sm = size === "sm";
+
+  const row = (
+    <View style={[s.track, sm && s.trackSm, scroll && s.trackScroll]}>
+      <Animated.View pointerEvents="none" style={[s.thumb, sm && s.thumbSm, t.dark ? null : t.shadow, thumb, !ready && s.hidden]} />
+      {segments.map((seg) => {
+        const on = seg.value === value;
+        return (
+          <PressableScale key={seg.value} testID={testID ? `${testID}-${seg.value}` : undefined}
+            onLayout={onItemLayout(seg.value)} onPress={() => on || onChange(seg.value)} haptic="selection" scaleTo={0.95}
+            accessibilityRole="tab" accessibilityState={{ selected: on }}
+            style={[s.item, sm && s.itemSm, !scroll && !sm && s.flex, on && !ready && s.itemOnFallback]}>
+            <Text weight={on ? "semibold" : "medium"} style={[s.label, sm && s.labelSm, on && s.labelOn]} numberOfLines={1}>{seg.label}</Text>
+          </PressableScale>
+        );
+      })}
+    </View>
+  );
+  return scroll ? (
+    <ScrollView ref={scrollRef} horizontal showsHorizontalScrollIndicator={false} style={s.scroll} contentContainerStyle={s.scrollContent}>{row}</ScrollView>
+  ) : <View style={sm ? undefined : s.outer}>{row}</View>;
 }
 
 const useStyles = makeStyles((t) => ({
-  scroll: { flexGrow: 0 },
-  row: { flexDirection: "row", gap: 6, paddingVertical: 2, marginBottom: spacing.md },
-  item: { backgroundColor: t.colors.buttonLight, borderRadius: radius.sm, paddingVertical: 8, paddingHorizontal: spacing.md, alignItems: "center" },
+  outer: { marginBottom: spacing.md },
+  scroll: { flexGrow: 0, marginBottom: spacing.md },
+  scrollContent: { paddingRight: spacing.sm },
+  track: { flexDirection: "row", backgroundColor: t.colors.fill, borderRadius: radius.md, padding: 4 },
+  trackSm: { padding: 3, borderRadius: radius.pill },
+  trackScroll: { alignSelf: "flex-start" },
+  thumb: { position: "absolute", top: 4, bottom: 4, left: 0, borderRadius: radius.sm, backgroundColor: t.dark ? t.colors.accentSoft : t.colors.card },
+  thumbSm: { top: 3, bottom: 3, borderRadius: radius.pill },
+  hidden: { opacity: 0 },
+  item: { paddingVertical: 9, paddingHorizontal: spacing.md, alignItems: "center", justifyContent: "center", borderRadius: radius.sm },
+  itemSm: { paddingVertical: 4, paddingHorizontal: 10, minWidth: 38, borderRadius: radius.pill },
+  itemOnFallback: { backgroundColor: t.dark ? t.colors.accentSoft : t.colors.card },
   flex: { flex: 1 },
-  on: { backgroundColor: t.colors.accent },
-  label: { fontSize: 14, fontWeight: "500" },
-  labelOn: { color: t.colors.onAccent, fontWeight: "600" },
+  label: { fontSize: 14, lineHeight: Math.round(19 * t.fonts.lineScale), color: t.colors.muted },
+  labelSm: { fontSize: 12.5, lineHeight: Math.round(17 * t.fonts.lineScale) },
+  labelOn: { color: t.dark ? t.colors.accent : t.colors.ink },
 }));

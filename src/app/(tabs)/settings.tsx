@@ -12,7 +12,7 @@ import type { Lang } from "@/types/api";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function SettingsScreen() {
-  const { t, lang, setLang } = useI18n();
+  const { t, targetLang, setLang } = useI18n();
   const qc = useQueryClient();
   const colorScheme = usePreferences((s) => s.colorScheme);
   const setColorScheme = usePreferences((s) => s.setColorScheme);
@@ -34,24 +34,24 @@ export default function SettingsScreen() {
 
   return (
     <Screen testID="settings-screen">
-      <Card title={t("settings_language")}>
-        <SegmentedControl<Lang> testID="lang" value={lang} onChange={setLang}
+      <Card icon="language-outline" title={t("settings_language")}>
+        <SegmentedControl<Lang> testID="lang" value={targetLang} onChange={setLang}
           segments={[{ value: "en", label: "English" }, { value: "hi", label: "हिन्दी" }]} />
       </Card>
-      <Card title={t("settings_appearance")}>
+      <Card icon="contrast-outline" title={t("settings_appearance")}>
         <SegmentedControl<ColorPreference> testID="appearance" value={colorScheme} onChange={setColorScheme}
           segments={[{ value: "system", label: t("appearance_system") }, { value: "light", label: t("appearance_light") }, { value: "dark", label: t("appearance_dark") }]} />
       </Card>
-      <Card title={t("settings_chart_style")}>
+      <Card icon="grid-outline" title={t("settings_chart_style")}>
         <SegmentedControl value={chartStyle} onChange={setChartStyle}
           segments={[{ value: "north", label: t("north") }, { value: "south", label: t("south") }]} />
       </Card>
-      <Card title={t("settings_engine")}>
+      <Card icon="server-outline" title={t("settings_engine")}>
         <Text variant="small">{t("settings_engine_default")}: {env.engineUrl}</Text>
         <TextField testID="engine-url" label={t("settings_engine_url")} value={draft} onChangeText={(s) => { setDraft(s); setTesting(false); }}
           autoCapitalize="none" autoCorrect={false} keyboardType="url" error={url ? null : t("settings_engine_invalid")} />
         <View style={styles.row}>
-          <Button variant="light" label={t("settings_test")} onPress={() => setTesting(true)} disabled={!url} loading={health.isFetching} />
+          <Button variant="secondary" label={t("settings_test")} onPress={() => setTesting(true)} disabled={!url} loading={health.isFetching} />
           <Button label={t("settings_engine_save")} onPress={() => url && save(url === env.engineUrl ? null : url)} disabled={!url} />
           {override && <Button variant="ghost" label={t("settings_engine_reset")} onPress={() => save(null)} />}
         </View>

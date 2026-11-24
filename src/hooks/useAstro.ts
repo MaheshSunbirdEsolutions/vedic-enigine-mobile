@@ -4,6 +4,17 @@ import { engineApi, queryKeys } from "@/api";
 import { birthOf, nowIn, todayIn } from "@/domain/birth";
 import type { Birth, Chart, Dasha, Lang, PanchangRequest, SadeSati } from "@/types/api";
 
+/**
+ * While a query for the same kundli in the other language loads, keep showing the previous
+ * language's result (no skeleton flash on a language switch). `langIndex` is where the language
+ * sits in the query key; every other part must match.
+ */
+export function keepAcrossLanguage<T>(prev: T | undefined, prevQuery: { queryKey: readonly unknown[] } | undefined, key: readonly unknown[], langIndex: number): T | undefined {
+  if (prev === undefined || !prevQuery) return undefined;
+  const a = prevQuery.queryKey;
+  return a.length === key.length && a.every((v, i) => i === langIndex || v === key[i]) ? prev : undefined;
+}
+
 export type ChartBundle = { chart: Chart; dasha: Dasha; sade: SadeSati };
 
 /** Chart, dasha (3 levels, "now" in the birth zone) and Sade Sati, fetched together. */
@@ -24,9 +35,11 @@ export function useChartBundle(k: Birth) {
 
 export function useInterpretation(k: Birth, lang: Lang, enabled = true) {
   const b = birthOf(k);
+  const queryKey = queryKeys.interpretation(b, lang);
   return useQuery({
-    queryKey: queryKeys.interpretation(b, lang),
+    queryKey,
     queryFn: ({ signal }) => engineApi.astro.interpret(b, lang, { signal }),
+    placeholderData: (prev, prevQuery) => keepAcrossLanguage(prev, prevQuery, queryKey, 1),
     enabled,
   });
 }
@@ -35,9 +48,11 @@ export function useInterpretation(k: Birth, lang: Lang, enabled = true) {
 export function useSimpleReport(k: Birth, lang: Lang, enabled = true) {
   const b = birthOf(k);
   const day = todayIn(b.tz);
+  const queryKey = queryKeys.simpleReport(b, lang, day);
   return useQuery({
-    queryKey: queryKeys.simpleReport(b, lang, day),
+    queryKey,
     queryFn: ({ signal }) => engineApi.reports.simple({ ...b, lang, at: nowIn(b.tz) }, { signal }),
+    placeholderData: (prev, prevQuery) => keepAcrossLanguage(prev, prevQuery, queryKey, 2),
     enabled,
   });
 }

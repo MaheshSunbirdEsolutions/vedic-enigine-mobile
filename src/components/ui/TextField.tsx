@@ -1,26 +1,41 @@
-import type { ComponentRef, Ref } from "react";
+import { useState, type ComponentRef, type Ref } from "react";
 import { TextInput, View, type TextInputProps } from "react-native";
 import { makeStyles, radius, spacing, useTheme } from "@/theme";
+import { Icon, type IconName } from "./Icon";
 import { Text } from "./Text";
 
-export type TextFieldProps = TextInputProps & { label?: string; error?: string | null; ref?: Ref<ComponentRef<typeof TextInput>> };
+export type TextFieldProps = TextInputProps & {
+  label?: string;
+  error?: string | null;
+  /** Ionicons name shown inside the field on the left. */
+  icon?: IconName;
+  ref?: Ref<ComponentRef<typeof TextInput>>;
+};
 
-export function TextField({ label, error, style, ref, ...rest }: TextFieldProps) {
+/** Filled input with a focus ring. Errors appear under the field and are announced. */
+export function TextField({ label, error, icon, style, ref, onFocus, onBlur, ...rest }: TextFieldProps) {
   const s = useStyles();
   const t = useTheme();
+  const [focused, setFocused] = useState(false);
   return (
     <View style={s.wrap}>
-      {label ? <Text variant="label">{label}</Text> : null}
-      <TextInput
-        ref={ref}
-        placeholderTextColor={t.colors.muted}
-        selectionColor={t.colors.accent}
-        keyboardAppearance={t.dark ? "dark" : "light"}
-        accessibilityLabel={rest.accessibilityLabel ?? label}
-        aria-invalid={!!error}
-        {...rest}
-        style={[s.input, error ? s.inputError : null, rest.multiline && s.multi, style]}
-      />
+      {label ? <Text variant="label" style={s.label}>{label}</Text> : null}
+      <View style={[s.box, rest.multiline && s.multiBox, focused && s.focused, !!error && s.errorBox]}>
+        {icon ? <View style={s.icon}><Icon name={icon} size={18} color={focused ? t.colors.accent : t.colors.muted} /></View> : null}
+        <TextInput
+          ref={ref}
+          placeholderTextColor={t.colors.muted}
+          selectionColor={t.colors.accent}
+          cursorColor={t.colors.accent}
+          keyboardAppearance={t.dark ? "dark" : "light"}
+          accessibilityLabel={rest.accessibilityLabel ?? label}
+          aria-invalid={!!error}
+          {...rest}
+          onFocus={(e) => { setFocused(true); onFocus?.(e); }}
+          onBlur={(e) => { setFocused(false); onBlur?.(e); }}
+          style={[s.input, rest.multiline && s.multi, style]}
+        />
+      </View>
       {error ? <Text variant="small" style={s.error} accessibilityLiveRegion="polite">{error}</Text> : null}
     </View>
   );
@@ -28,11 +43,19 @@ export function TextField({ label, error, style, ref, ...rest }: TextFieldProps)
 
 const useStyles = makeStyles((t) => ({
   wrap: { marginBottom: spacing.md },
-  input: {
-    borderWidth: 1, borderColor: t.colors.line, borderRadius: radius.sm, backgroundColor: t.colors.card,
-    paddingHorizontal: spacing.md, paddingVertical: 10, fontSize: 15, color: t.colors.ink,
+  label: { marginBottom: 6 },
+  box: {
+    flexDirection: "row", alignItems: "center", backgroundColor: t.colors.fill, borderRadius: radius.md,
+    borderWidth: 1.5, borderColor: "transparent", minHeight: 50,
   },
-  inputError: { borderColor: t.colors.bad },
-  multi: { minHeight: 72, textAlignVertical: "top" },
-  error: { color: t.colors.bad, marginTop: 4 },
+  multiBox: { alignItems: "flex-start" },
+  focused: { borderColor: t.colors.accent, backgroundColor: t.colors.card },
+  errorBox: { borderColor: t.colors.bad },
+  icon: { paddingLeft: spacing.md },
+  input: {
+    flex: 1, paddingHorizontal: spacing.md, paddingVertical: 12, fontSize: 15, color: t.colors.ink,
+    fontFamily: t.fonts.regular, outlineStyle: "none" as never,
+  },
+  multi: { minHeight: 88, textAlignVertical: "top" },
+  error: { color: t.colors.bad, marginTop: 6 },
 }));

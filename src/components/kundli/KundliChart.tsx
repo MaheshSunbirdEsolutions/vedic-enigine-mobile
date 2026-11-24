@@ -33,11 +33,11 @@ export const KundliChart = memo(function KundliChart(p: KundliChartProps) {
 });
 
 function North({ lagna, bySign, ascLabel }: KundliChartProps) {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
   return (
     <>
       <Path d={NORTH_LINES} fill="none" stroke={colors.chartLine} strokeWidth={1.5} />
-      <SvgText x={200} y={62} fontSize={11} fill={colors.accent} textAnchor="middle" fontWeight="700">{ascLabel}</SvgText>
+      <SvgText x={200} y={62} fontSize={11} fill={colors.accent} textAnchor="middle" fontFamily={fonts.bold}>{ascLabel}</SvgText>
       {NORTH_PLANET_ANCHOR.map((anchor, house) => {
         const sign = (lagna + house) % 12;
         const labels = bySign[sign] ?? [];
@@ -46,7 +46,7 @@ function North({ lagna, bySign, ascLabel }: KundliChartProps) {
           <SvgGroup key={house}>
             <SvgText x={sx} y={sy} fontSize={11} fill={colors.chartLabel} textAnchor="middle">{String(sign + 1)}</SvgText>
             {labelPositions(anchor, labels.length).map(([x, y], k) => (
-              <SvgText key={k} x={x} y={y + 4} fontSize={13} fontWeight="600" fill={colors.ink} textAnchor="middle">{labels[k]}</SvgText>
+              <SvgText key={k} x={x} y={y + 4} fontSize={13} fontFamily={fonts.semibold} fill={colors.ink} textAnchor="middle">{labels[k]}</SvgText>
             ))}
           </SvgGroup>
         );
@@ -56,7 +56,7 @@ function North({ lagna, bySign, ascLabel }: KundliChartProps) {
 }
 
 function South({ lagna, bySign, ascLabel, centreLabel, signLabel }: KundliChartProps) {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
   return (
     <>
       {Object.entries(SOUTH_CELL).map(([sg, [c, r]]) => {
@@ -65,10 +65,10 @@ function South({ lagna, bySign, ascLabel, centreLabel, signLabel }: KundliChartP
           <SvgGroup key={s}>
             <Rect x={x} y={y} width={100} height={100} fill={s === lagna ? colors.accentSoft : "none"} stroke={colors.chartLine} />
             <SvgText x={x + 6} y={y + 14} fontSize={10.5} fill={colors.chartLabel}>{signLabel ? signLabel(SIGNS[s]) : SIGNS[s].slice(0, 3)}</SvgText>
-            {s === lagna && <SvgText x={x + 94} y={y + 14} fontSize={10.5} fill={colors.accent} textAnchor="end" fontWeight="700">{ascLabel}</SvgText>}
+            {s === lagna && <SvgText x={x + 94} y={y + 14} fontSize={10.5} fill={colors.accent} textAnchor="end" fontFamily={fonts.bold}>{ascLabel}</SvgText>}
             {labels.map((l, k) => (
               <SvgText key={k} x={x + 50 + (labels.length > 1 ? (k % 2 ? 22 : -22) : 0)} y={y + 42 + Math.floor(k / 2) * 17}
-                fontSize={13} fontWeight="600" fill={colors.ink} textAnchor="middle">{l}</SvgText>
+                fontSize={13} fontFamily={fonts.semibold} fill={colors.ink} textAnchor="middle">{l}</SvgText>
             ))}
           </SvgGroup>
         );

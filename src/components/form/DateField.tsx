@@ -28,7 +28,7 @@ export function DateField({ label, value, onChange, onBlur, error, testID }: Dat
           <TextField testID={testID} label={label} value={value} onChangeText={onChange} onBlur={onBlur} error={error}
             placeholder={t("date_ph")} autoCorrect={false} keyboardType="numbers-and-punctuation" maxLength={10} />
         </View>
-        {native && <Button variant="light" label={t("pick_date")} onPress={() => setOpen(true)} style={styles.pick} />}
+        {native && <Button variant="secondary" label={t("pick_date")} onPress={() => setOpen(true)} style={styles.pick} />}
       </View>
       {native && open && (
         <DateTimePicker
