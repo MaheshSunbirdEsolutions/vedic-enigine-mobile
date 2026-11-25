@@ -8,6 +8,7 @@ import sade from "@/__fixtures__/sade.json";
 import simple from "@/__fixtures__/simple.json";
 import { KundliChart } from "@/components/kundli/KundliChart";
 import { MatchResultView } from "@/components/match/MatchResultView";
+import { PersonPicker } from "@/components/match/PersonPicker";
 import { PanchangView } from "@/components/panchang/PanchangView";
 import { ChartTab } from "@/components/tabs/ChartTab";
 import { DashaTab } from "@/components/tabs/DashaTab";
@@ -76,6 +77,14 @@ describe("tabs render real engine responses", () => {
     await renderWithProviders(<MatchResultView m={match as MatchResult} />);
     expect(screen.getByTestId("match-total")).toHaveTextContent(/25.5/);
     expect(screen.getByText("Acceptable", { exact: false })).toBeTruthy();
+  });
+
+  it("person picker renders clean New kundli button and opens manual birth form", async () => {
+    await renderWithProviders(<PersonPicker testID="groom" title="Groom" saved={[]} value={null} onChange={jest.fn()} />);
+    expect(screen.getByText("New kundli")).toBeTruthy();
+    expect(screen.queryByText(/New kundli\s*…/)).toBeNull();
+    await fireEvent.press(screen.getByTestId("groom-manual"));
+    expect(screen.getByTestId("birth-form")).toBeTruthy();
   });
 
   it("works in Hindi", async () => {

@@ -20,8 +20,23 @@ export function PersonPicker({ title, icon, saved, value, onChange, testID }: {
       {value ? <Text testID={`${testID}-value`}>{value.name} · <Text variant="small">{describeBirth(value)}</Text></Text>
         : <Text variant="muted">{t("person_pick")}</Text>}
       <View style={styles.actions}>
-        <Button variant="secondary" label={t("choose_saved")} onPress={() => setMode(mode === "saved" ? "closed" : "saved")} disabled={!saved.length} />
-        <Button variant="ghost" label={`${t("new_kundli")} …`} onPress={() => setMode(mode === "manual" ? "closed" : "manual")} />
+        <Button
+          testID={testID ? `${testID}-saved` : undefined}
+          variant="secondary"
+          icon="albums-outline"
+          label={t("choose_saved")}
+          onPress={() => setMode(mode === "saved" ? "closed" : "saved")}
+          disabled={!saved.length}
+          style={[styles.btn, mode === "saved" && styles.btnActive]}
+        />
+        <Button
+          testID={testID ? `${testID}-manual` : undefined}
+          variant="secondary"
+          icon="add"
+          label={t("new_kundli")}
+          onPress={() => setMode(mode === "manual" ? "closed" : "manual")}
+          style={[styles.btn, mode === "manual" && styles.btnActive]}
+        />
       </View>
       {mode === "saved" && saved.map((k) => (
         <Pressable key={k.id} onPress={() => { onChange(k); setMode("closed"); }} accessibilityRole="button"
@@ -38,6 +53,8 @@ export function PersonPicker({ title, icon, saved, value, onChange, testID }: {
 
 const useStyles = makeStyles((t) => ({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginVertical: spacing.sm },
+  btn: { flexGrow: 1, borderWidth: 1, borderColor: "transparent" },
+  btnActive: { backgroundColor: t.colors.accentSoft, borderColor: t.colors.accent },
   option: { padding: spacing.md, borderRadius: radius.sm, borderWidth: 1, borderColor: t.colors.line, marginBottom: 6 },
   on: { backgroundColor: t.colors.accentSoft, borderColor: t.colors.accent },
 }));
