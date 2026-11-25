@@ -18,7 +18,7 @@ export type Birth = {
   settings?: ChartSettings;
 };
 
-export type Gender = "male" | "female" | "other" | "";
+export type Gender = "male" | "female" | "other";
 
 export type Kundli = Birth & {
   id?: string;

@@ -78,7 +78,7 @@ describe("kundli params", () => {
     expect(kundliFromParams({ dt: "1990-05-14T06:30:00", tz: "Asia/Kolkata" })).toBeNull();
     expect(kundliFromParams({ dt: "bad", tz: "x", lat: "1", lon: "2" })).toBeNull();
     const k = kundliFromParams({ dt: "1990-05-14T06:30", tz: "UTC", lat: "1", lon: "2", ay: "weird", gender: "x" });
-    expect(k).toMatchObject({ datetime_local: "1990-05-14T06:30:00", gender: "", settings: { ayanamsa: "lahiri", node: "mean" } });
+    expect(k).toMatchObject({ datetime_local: "1990-05-14T06:30:00", gender: "other", settings: { ayanamsa: "lahiri", node: "mean" } });
   });
 });
 

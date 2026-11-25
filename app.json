@@ -46,6 +46,17 @@
     "experiments": {
       "typedRoutes": false
     },
-    "backgroundColor": "#faf7f2"
+    "backgroundColor": "#faf7f2",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "74340c34-1faa-4073-ab20-6dd257b8ba66"
+      }
+    },
+    "owner": "mandav"
   }
 }

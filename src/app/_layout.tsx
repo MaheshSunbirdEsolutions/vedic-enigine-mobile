@@ -57,6 +57,10 @@ function RootStack({ ready }: { ready: boolean }) {
     if (ready) SplashScreen.hideAsync().catch(() => {});
   }, [ready]);
 
+  // Wait until fonts and saved preferences are ready before mounting screens, so Yoga never
+  // measures and caches text bounds with the fallback system font on Android.
+  if (!ready) return null;
+
   return (
     <>
       <StatusBar style={theme.dark ? "light" : "dark"} />

@@ -58,10 +58,10 @@ export function BirthForm({ initial, onSubmit, submitLabel, onCancel, busy }: Bi
 
       <Text variant="label">{t("gender")}</Text>
       <Controller control={control} name="gender" render={({ field }) => (
-        <SegmentedControl<Gender | "none">
-          value={field.value || "none"}
-          onChange={(g) => field.onChange(g === "none" ? "" : g)}
-          segments={[{ value: "none", label: "—" }, { value: "male", label: t("male") }, { value: "female", label: t("female") }, { value: "other", label: t("other") }]}
+        <SegmentedControl<Gender>
+          value={field.value}
+          onChange={field.onChange}
+          segments={[{ value: "male", label: t("male") }, { value: "female", label: t("female") }, { value: "other", label: t("other") }]}
         />
       )} />
 

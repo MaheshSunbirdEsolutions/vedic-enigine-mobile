@@ -1,8 +1,13 @@
 /** Birth-data helpers shared by every feature. Pure functions, no React. */
-import type { Birth, ChartSettings, Kundli } from "@/types/api";
+import type { Birth, ChartSettings, Gender, Kundli } from "@/types/api";
 import { to12h } from "./time12";
 
 export const DEFAULT_SETTINGS: ChartSettings = { ayanamsa: "lahiri", node: "mean" };
+export const GENDERS = ["male", "female", "other"] as const;
+
+/** Falls back to "other" when gender is missing or not one of the supported values. */
+export const normalizeGender = (g?: string | null): Gender =>
+  (GENDERS as readonly string[]).includes(g ?? "") ? (g as Gender) : "other";
 
 /** The calculation input of a kundli (drops name, notes, ids…). */
 export const birthOf = (k: Birth): Birth => ({

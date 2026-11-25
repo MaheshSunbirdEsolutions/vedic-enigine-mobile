@@ -34,7 +34,7 @@ describe("birth form schema", () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.kundli).toMatchObject({
-      name: "Mahesh", datetime_local: "1980-12-27T22:46:00", tz: "Asia/Kolkata", lat: 31.71, lon: 76.93,
+      name: "Mahesh", gender: "other", datetime_local: "1980-12-27T22:46:00", tz: "Asia/Kolkata", lat: 31.71, lon: 76.93,
       place: "Mandi", settings: { ayanamsa: "lahiri", node: "mean" },
     });
     expect(r.kundli.id).toBeUndefined();
@@ -61,7 +61,7 @@ describe("birth form schema", () => {
 
   it("prefills an existing kundli in 12-hour form", () => {
     const v = defaultBirthValues({ name: "A", datetime_local: "2000-01-02T15:04:05", tz: "Europe/London", lat: 51.5, lon: -0.1, place: "London" });
-    expect(v).toMatchObject({ date: "2000-01-02", time: "03:04:05", meridiem: "PM", lat: "51.5", lon: "-0.1", tz: "Europe/London" });
+    expect(v).toMatchObject({ date: "2000-01-02", time: "03:04:05", meridiem: "PM", gender: "other", lat: "51.5", lon: "-0.1", tz: "Europe/London" });
     expect(v.place?.name).toBe("London");
   });
 });

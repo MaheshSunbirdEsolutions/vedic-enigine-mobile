@@ -2,7 +2,7 @@
  * "Jyotish Lab" header title: the brand name and mark stay identical in every language
  * (always the Latin display font, never translated).
  */
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { LogoMark, Text } from "@/components/ui";
 import { fontSets, makeStyles } from "@/theme";
 
@@ -20,5 +20,8 @@ export function BrandTitle() {
 
 const useStyles = makeStyles((t) => ({
   row: { flexDirection: "row", alignItems: "center", gap: 8 },
-  name: { fontFamily: fontSets.latin.display, fontSize: 17, lineHeight: 26, color: t.colors.ink, letterSpacing: -0.2 },
+  name: {
+    fontFamily: fontSets.latin.display, fontSize: 17, lineHeight: 26, color: t.colors.ink,
+    letterSpacing: Platform.OS === "ios" ? -0.2 : 0, flexShrink: 1,
+  },
 }));

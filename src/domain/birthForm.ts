@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import type { Kundli, Place } from "@/types/api";
+import { GENDERS, normalizeGender } from "./birth";
 import { to12h, to24h, TIME12_RE } from "./time12";
 
 export function isValidDate(s: string): boolean {
@@ -32,7 +33,7 @@ const required = (empty: string, format: string, ok: (s: string) => boolean) =>
 export const birthFormSchema = z
   .object({
     name: z.string().max(120, "err_name_long"),
-    gender: z.enum(["", "male", "female", "other"]),
+    gender: z.enum(GENDERS),
     date: required("err_dt", "err_date_format", isValidDate),
     time: required("err_dt", "err_time_format", (s) => TIME12_RE.test(s)),
     meridiem: z.enum(["AM", "PM"]),
@@ -58,7 +59,7 @@ export function defaultBirthValues(k?: Partial<Kundli>): BirthFormValues {
   const t = k?.datetime_local ? to12h(k.datetime_local.slice(11, 19)) : { time: "", meridiem: "AM" as const };
   return {
     name: k?.name ?? "",
-    gender: k?.gender ?? "",
+    gender: normalizeGender(k?.gender),
     date: k?.datetime_local?.slice(0, 10) ?? "",
     time: t.time,
     meridiem: t.meridiem,

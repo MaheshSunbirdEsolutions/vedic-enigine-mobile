@@ -1,4 +1,4 @@
-import { Text as RNText, type TextProps } from "react-native";
+import { Platform, Text as RNText, type TextProps } from "react-native";
 import { makeStyles, typeScale, type FontWeightName, type Theme } from "@/theme";
 
 export type TextVariant = "hero" | "title" | "heading" | "subheading" | "body" | "muted" | "small" | "label";
@@ -10,7 +10,7 @@ export type TextVariant = "hero" | "title" | "heading" | "subheading" | "body" |
  */
 export function Text({ variant = "body", weight, style, ...rest }: TextProps & { variant?: TextVariant; weight?: FontWeightName }) {
   const s = useStyles();
-  return <RNText {...rest} style={[s[variant], weight && s[`w_${weight}`], style]} />;
+  return <RNText textBreakStrategy="simple" {...rest} style={[s[variant], weight && s[`w_${weight}`], style]} />;
 }
 
 const v = (t: Theme, key: keyof typeof typeScale, family: string, color = t.colors.ink) => ({
@@ -21,8 +21,8 @@ const v = (t: Theme, key: keyof typeof typeScale, family: string, color = t.colo
 });
 
 const useStyles = makeStyles((t) => ({
-  hero: { ...v(t, "hero", t.fonts.display), letterSpacing: t.script === "latin" ? -0.4 : 0 },
-  title: { ...v(t, "title", t.fonts.display), letterSpacing: t.script === "latin" ? -0.2 : 0 },
+  hero: { ...v(t, "hero", t.fonts.display), letterSpacing: Platform.OS === "ios" && t.script === "latin" ? -0.4 : 0 },
+  title: { ...v(t, "title", t.fonts.display), letterSpacing: Platform.OS === "ios" && t.script === "latin" ? -0.2 : 0 },
   heading: v(t, "heading", t.fonts.display),
   subheading: v(t, "subheading", t.fonts.semibold),
   body: v(t, "body", t.fonts.regular),
