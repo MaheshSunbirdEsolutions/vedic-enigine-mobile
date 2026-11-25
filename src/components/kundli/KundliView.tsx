@@ -69,7 +69,6 @@ export function KundliView({ initial }: { initial: Kundli }) {
         <LinearGradient colors={theme.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.hero}>
           <View style={s.heroTop}>
             <Text variant="title" style={[s.onHero, s.flex]} numberOfLines={2}>{k.name || t("new_kundli")}</Text>
-            {!k.id && <View style={s.badge}><Text variant="small" weight="semibold" style={s.onHero}>{t("unsaved")}</Text></View>}
           </View>
           <View style={s.heroMeta}>
             <Icon name="calendar-outline" size={14} color={onWhite} />
@@ -121,7 +120,6 @@ const useStyles = makeStyles((t) => ({
   heroMeta: { flexDirection: "row", alignItems: "center", gap: 6 },
   onHero: { color: t.colors.onAccent },
   onHeroSoft: { color: t.colors.onAccent, opacity: 0.88 },
-  badge: { backgroundColor: "rgba(255,255,255,0.22)", borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 3 },
   actions: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.md },
   flex: { flex: 1 },
 }));

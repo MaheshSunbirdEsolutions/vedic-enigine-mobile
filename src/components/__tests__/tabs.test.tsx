@@ -37,6 +37,7 @@ describe("tabs render real engine responses", () => {
     expect(screen.getByTestId("chart-D1")).toBeTruthy();
     expect(screen.getByTestId("chart-D9")).toBeTruthy();
     expect(screen.getAllByText("Leo").length).toBeGreaterThan(0); // lagna sign in the fixture
+    expect(screen.getByText(chart.planets.Sun.degree_in_sign)).toBeTruthy();
     await fireEvent.press(screen.getByTestId("chart-style-south"));
     expect(usePreferences.getState().chartStyle).toBe("south");
   });

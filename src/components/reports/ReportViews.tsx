@@ -380,19 +380,36 @@ export function LifelongReport({ r }: { r: Json }) {
   const s = useStyles();
   const th = useTheme();
   const o = r.overview, st = r.story;
+  const chapters: Json[] = st?.chapters ?? [];
+  const threeCol = chapters.length % 4 !== 0 && chapters.length % 3 === 0;
   return (
     <>
       {st ? (
         <>
           <H2>{t("life_story")}</H2>
-          <View style={s.timeline}>
-            {st.chapters.map((c: Json) => (
-              <View key={c.n} style={[s.seg, { flex: Math.max(1, c.age_to - c.age_from), backgroundColor: th.tones[rateTone(c.rating)].bg },
-                c.status === "present" && { borderColor: th.colors.accent, borderWidth: 2 }]}>
-                <Text variant="label" numberOfLines={1} style={{ color: th.tones[rateTone(c.rating)].fg }}>{T(c.lord)}</Text>
-                <Text variant="small" numberOfLines={1}>{Math.round(c.age_from)}</Text>
-              </View>
-            ))}
+          <View style={s.timelineTrack} accessibilityElementsHidden>
+            {chapters.map((c: Json) => {
+              const tone = th.tones[rateTone(c.rating)];
+              return (
+                <View key={c.n} style={[s.timelineSlice, {
+                  flex: Math.max(1, c.age_to - c.age_from),
+                  backgroundColor: c.status === "present" ? th.colors.accent : tone.fg,
+                  opacity: c.status === "present" ? 1 : 0.45,
+                }]} />
+              );
+            })}
+          </View>
+          <View style={s.timeline} testID="life-story-grid">
+            {chapters.map((c: Json) => {
+              const tone = th.tones[rateTone(c.rating)];
+              return (
+                <View key={c.n} style={[s.seg, threeCol && s.segThreeCol, { backgroundColor: tone.bg },
+                  c.status === "present" && { borderColor: th.colors.accent, borderWidth: 1.5 }]}>
+                  <Text variant="label" numberOfLines={1} style={{ color: tone.fg }}>{T(c.lord)}</Text>
+                  <Text variant="small" numberOfLines={1}>{Math.round(c.age_from)}–{Math.round(c.age_to)}</Text>
+                </View>
+              );
+            })}
           </View>
           {st.prologue.map((p: string, i: number) => <P key={i}>{p}</P>)}
           {st.chapters.map((c: Json) => (
@@ -563,8 +580,11 @@ const useStyles = makeStyles((t) => ({
   sav: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: spacing.sm },
   savCell: { width: 52, alignItems: "center", paddingVertical: 6, borderRadius: radius.sm, backgroundColor: t.colors.card, borderWidth: 0.5, borderColor: t.colors.line },
   savTotal: { backgroundColor: t.colors.accentSoft },
-  timeline: { flexDirection: "row", gap: 3, marginBottom: spacing.md },
-  seg: { borderRadius: radius.xs, paddingVertical: 6, paddingHorizontal: 3, alignItems: "center", minWidth: 0, borderWidth: 0, borderColor: "transparent" },
+  timelineTrack: { flexDirection: "row", height: 6, borderRadius: radius.pill, overflow: "hidden", gap: 2, marginBottom: spacing.sm },
+  timelineSlice: { height: "100%" },
+  timeline: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: spacing.md },
+  seg: { flexBasis: "23%", flexGrow: 1, minWidth: 74, borderRadius: radius.sm, paddingVertical: 8, paddingHorizontal: 6, alignItems: "center", gap: 2, borderWidth: 1, borderColor: "transparent" },
+  segThreeCol: { flexBasis: "31%" },
   para: { marginBottom: spacing.sm },
   yearHead: { flexDirection: "row", alignItems: "center", gap: spacing.md, marginBottom: spacing.sm },
   months: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.sm },

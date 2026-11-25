@@ -96,7 +96,7 @@ describe("Kundli view", () => {
     const unsaved = { ...K, id: undefined };
     mockApi.kundlis.create.mockResolvedValue({ ...K, id: "new1" });
     await renderWithProviders(<KundliView initial={unsaved} />);
-    expect(screen.getByText("Not saved yet")).toBeTruthy();
+    expect(screen.queryByText("Not saved yet")).toBeNull();
     await fireEvent.press(screen.getByTestId("save-kundli"));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/kundli/[id]", params: { id: "new1" } }));
     expect(mockApi.kundlis.create).toHaveBeenCalledWith(expect.objectContaining({ name: "Mahesh" }));

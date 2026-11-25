@@ -3,6 +3,8 @@
  * Reports tab offers all 12 categories with the same labels as the web app.
  */
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 import full from "@/__fixtures__/reports/full.json";
 import issues from "@/__fixtures__/reports/issues.json";
 import issuesHi from "@/__fixtures__/reports/issues.hi.json";
@@ -27,6 +29,16 @@ import { REPORTS, ReportsTab } from "@/components/tabs/ReportsTab";
 import { renderWithProviders } from "@/test/render";
 
 const books = { lalkitab: 251, bhrigu: 531 };
+
+jest.mock("expo-print", () => ({
+  printAsync: jest.fn().mockResolvedValue(undefined),
+  printToFileAsync: jest.fn().mockResolvedValue({ uri: "file:///tmp/report.pdf" }),
+}));
+
+jest.mock("expo-sharing", () => ({
+  isAvailableAsync: jest.fn().mockResolvedValue(true),
+  shareAsync: jest.fn().mockResolvedValue(undefined),
+}));
 
 jest.mock("@/api", () => ({
   ...jest.requireActual("@/api"),
@@ -63,6 +75,10 @@ describe("report views render real engine data", () => {
 
   it("collapsible sections open on tap", async () => {
     await renderWithProviders(<LifelongReport r={lifelong} />);
+    expect(screen.getByTestId("life-story-grid")).toBeTruthy();
+    for (const c of lifelong.story.chapters) {
+      expect(screen.getAllByText(c.lord, { exact: false }).length).toBeGreaterThan(0);
+    }
     expect(screen.queryByText(lifelong.overview.text)).toBeNull();
     await fireEvent.press(screen.getByText(en.ui.detailed_analysis));
     expect(screen.getByText(lifelong.overview.text)).toBeTruthy();
@@ -80,11 +96,37 @@ describe("Reports tab", () => {
     mockApi.reports.raw.mockImplementation((id: string) => Promise.resolve({ lifelong, yearly }[id as "lifelong" | "yearly"]));
   });
 
-  it("offers all 12 reports with the web app's labels", async () => {
+  it("offers all 12 reports without Expand all", async () => {
     await renderWithProviders(<ReportsTab kundli={K} />);
     expect(REPORTS).toHaveLength(12);
     for (const r of REPORTS) expect(screen.getByTestId(`report-${r.key}`)).toBeTruthy();
+    expect(screen.queryByTestId("expand-all")).toBeNull();
     expect(screen.queryByText(/web app/i)).toBeNull();
+  });
+
+  it("shows Print and Download PDF only after each sub-tab finishes loading and exports unique content", async () => {
+    let resolveYearly!: (v: unknown) => void;
+    mockApi.reports.raw.mockImplementation((id: string) =>
+      id === "yearly" ? new Promise((r) => { resolveYearly = r; }) : Promise.resolve(lifelong),
+    );
+    await renderWithProviders(<ReportsTab kundli={K} />);
+    expect(await screen.findByTestId("report-print-simple")).toBeTruthy();
+    expect(screen.getByTestId("report-download-simple")).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId("report-yearpred"));
+    expect(screen.queryByTestId("report-print-yearpred")).toBeNull();
+    expect(screen.queryByTestId("report-download-yearpred")).toBeNull();
+
+    resolveYearly(yearly);
+    expect(await screen.findByTestId("report-print-yearpred")).toBeTruthy();
+    expect(screen.getByTestId("report-download-yearpred")).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId("report-print-yearpred"));
+    await waitFor(() => expect(Print.printAsync).toHaveBeenCalledWith({ html: expect.stringContaining("2026: overall a challenging year.") }));
+
+    await fireEvent.press(screen.getByTestId("report-download-yearpred"));
+    await waitFor(() => expect(Print.printToFileAsync).toHaveBeenCalledWith({ html: expect.stringContaining("2026: overall a challenging year.") }));
+    await waitFor(() => expect(Sharing.shareAsync).toHaveBeenCalledWith("file:///tmp/report.pdf", expect.objectContaining({ mimeType: "application/pdf" })));
   });
 
   it("loads the chosen report and its year", async () => {

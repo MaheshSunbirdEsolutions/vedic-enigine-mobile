@@ -54,6 +54,9 @@ export const MOBILE: Record<Lang, Table> = {
     err_lat: "Between -90 and 90.",
     err_lon: "Between -180 and 180.",
     err_tz: "An IANA zone, e.g. Asia/Kolkata.",
+    report_print: "Print",
+    report_download_pdf: "Download PDF",
+    report_export_failed: "Could not prepare PDF. Please try again.",
   },
   hi: {
     engine_down: "वैदिक इंजन से संपर्क नहीं हो पा रहा। देखें कि इंजन चल रहा है और सेटिंग्स में दिया इंजन URL इस फ़ोन से पहुँच में है।",
@@ -97,6 +100,9 @@ export const MOBILE: Record<Lang, Table> = {
     err_lat: "-90 से 90 के बीच।",
     err_lon: "-180 से 180 के बीच।",
     err_tz: "IANA समय क्षेत्र, जैसे Asia/Kolkata।",
+    report_print: "प्रिंट",
+    report_download_pdf: "PDF डाउनलोड",
+    report_export_failed: "PDF तैयार नहीं हो सका। कृपया फिर कोशिश करें।",
   },
 };
 

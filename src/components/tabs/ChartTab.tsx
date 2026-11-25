@@ -24,17 +24,27 @@ export function ChartTab({ chart }: { chart: Chart }) {
   const rows: PlanetRow[] = Object.entries(chart.planets).map(([name, p]) => ({ name, p, retro: retro[name] }));
 
   const planetCols: Column<PlanetRow>[] = [
-    { key: "g", label: t("graha"), flex: 1.1, render: (r) => <Text style={styles.b}>{T(r.name)}{r.retro ? ` ${mark}` : ""}</Text> },
-    { key: "s", label: t("sign"), flex: 1.1, render: (r) => `${T(r.p.sign)} ${r.p.degree_in_sign}` },
-    { key: "n", label: t("nakshatra"), flex: 1.2, render: (r) => `${T(r.p.nakshatra.name)} (${r.p.nakshatra.pada})` },
-    { key: "h", label: t("house"), flex: 0.5, render: (r) => String(r.p.house) },
-    { key: "d", label: t("dignity"), flex: 1, render: (r) => r.p.dignity === "n/a" ? "—" : <Chip tone={dignityTone(r.p.dignity)} label={T(r.p.dignity)} /> },
+    { key: "g", label: t("graha"), width: 92, render: (r) => <Text style={styles.b}>{T(r.name)}{r.retro ? ` ${mark}` : ""}</Text> },
+    {
+      key: "s",
+      label: t("sign"),
+      width: 112,
+      render: (r) => (
+        <View>
+          <Text style={styles.cellText}>{T(r.p.sign)}</Text>
+          <Text variant="small">{r.p.degree_in_sign}</Text>
+        </View>
+      ),
+    },
+    { key: "n", label: t("nakshatra"), width: 150, render: (r) => `${T(r.p.nakshatra.name)} (${r.p.nakshatra.pada})` },
+    { key: "h", label: t("house"), width: 64, render: (r) => String(r.p.house) },
+    { key: "d", label: t("dignity"), width: 124, render: (r) => r.p.dignity === "n/a" ? "—" : <Chip tone={dignityTone(r.p.dignity)} label={T(r.p.dignity)} /> },
   ];
   const houseCols: Column<HouseRow>[] = [
-    { key: "h", label: t("house"), flex: 0.5, render: (h) => String(h.house) },
-    { key: "s", label: t("sign"), render: (h) => T(h.sign) },
-    { key: "l", label: t("lord"), render: (h) => T(h.lord) },
-    { key: "o", label: t("occupants"), flex: 1.4, render: (h) => h.planets.map(T).join(", ") || "—" },
+    { key: "h", label: t("house"), width: 64, render: (h) => String(h.house) },
+    { key: "s", label: t("sign"), width: 108, render: (h) => T(h.sign) },
+    { key: "l", label: t("lord"), width: 92, render: (h) => T(h.lord) },
+    { key: "o", label: t("occupants"), width: 140, render: (h) => h.planets.map(T).join(", ") || "—" },
   ];
 
   return (
@@ -65,10 +75,10 @@ export function ChartTab({ chart }: { chart: Chart }) {
         );
       })}
       <Section title={t("positions")}>
-        <DataTable columns={planetCols} rows={rows} rowKey={(r) => r.name} />
+        <DataTable scroll columns={planetCols} rows={rows} rowKey={(r) => r.name} />
       </Section>
       <Section title={t("houses_title")}>
-        <DataTable columns={houseCols} rows={chart.houses} rowKey={(h) => String(h.house)} />
+        <DataTable scroll columns={houseCols} rows={chart.houses} rowKey={(h) => String(h.house)} />
       </Section>
     </View>
   );
@@ -76,5 +86,6 @@ export function ChartTab({ chart }: { chart: Chart }) {
 
 const useStyles = makeStyles((t) => ({
   b: { fontFamily: t.fonts.semibold, fontSize: 14 },
+  cellText: { fontSize: 14 },
   chips: { flexDirection: "row", flexWrap: "wrap", marginTop: spacing.xs },
 }));

@@ -7,7 +7,7 @@
  * Report payloads are large and evolve with the engine, so they are typed loosely (`Json`);
  * the contract test checks the fields these components rely on.
  */
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Linking, View } from "react-native";
 import Animated, { FadeIn, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { KundliChart } from "@/components/kundli/KundliChart";
@@ -20,9 +20,6 @@ import { getEngineUrl } from "@/state/preferences";
 import { makeStyles, motion, radius, spacing, useTheme } from "@/theme";
 
 export type Json = any;
-
-/** "Expand all" switch for the report on screen. */
-export const ExpandCtx = createContext(false);
 
 export const rateTone = (k?: string): Tone => (k === "excellent" || k === "good" ? "good" : k === "mixed" ? "mixed" : k ? "bad" : "neutral");
 export const verdictTone = (k?: string): Tone => (k === "strong" ? "good" : k === "moderate" ? "mixed" : "bad");
@@ -89,13 +86,12 @@ export function ScoreBar({ ratio, tone = "accent" }: { ratio: number; tone?: Ton
 
 // ---------- collapsible ----------
 
-/** Collapsible section; opens with "Expand all" or when `open` is set. */
+/** Collapsible section; opens by default when `open` is set. */
 export function Fold({ summary, children, open }: { summary: ReactNode; children: ReactNode; open?: boolean }) {
   const s = useStyles();
   const t = useTheme();
-  const all = useContext(ExpandCtx);
   const [mine, setMine] = useState<boolean | null>(null);
-  const shown = mine ?? (open || all);
+  const shown = mine ?? !!open;
   const chevron = useAnimatedStyle(() => ({ transform: [{ rotate: withTiming(shown ? "90deg" : "0deg", { duration: motion.fast }) }] }));
   return (
     <View style={s.fold}>
