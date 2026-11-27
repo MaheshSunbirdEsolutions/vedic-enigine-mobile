@@ -219,4 +219,33 @@ describe("Horoscope screen", () => {
     })));
     expect(await screen.findByText(/Sent via SMTP to user@example.com/)).toBeTruthy();
   });
+
+  it("gates By Moon sign (12 Rashis) behind sign-in when signed out", async () => {
+    await renderWithProviders(<HoroscopeScreen />, {
+      auth: { isConfigured: true, isLoaded: true, isSignedIn: false },
+    });
+
+    expect(screen.getByTestId("horoscope-auth-gate")).toBeTruthy();
+    expect(mockApi.kundlis.list).not.toHaveBeenCalled();
+    expect(mockApi.astro.dailyHoroscope).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByText("Sign in"));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/(auth)/sign-in",
+      params: { redirectTo: "/(tabs)/horoscope" },
+    });
+  });
+
+  it("gates By Moon sign (12 Rashis) behind creating a kundli when user has none saved", async () => {
+    mockApi.kundlis.list.mockResolvedValue([]);
+    await renderWithProviders(<HoroscopeScreen />, {
+      auth: { isConfigured: true, isLoaded: true, isSignedIn: true },
+    });
+
+    expect(await screen.findByTestId("horoscope-create-kundli-gate")).toBeTruthy();
+    expect(mockApi.astro.dailyHoroscope).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByText("New kundli"));
+    expect(mockPush).toHaveBeenCalledWith("/kundli/new");
+  });
 });

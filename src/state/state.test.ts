@@ -16,6 +16,23 @@ describe("preferences", () => {
     usePreferences.getState().setChartStyle("south");
     expect(usePreferences.getState()).toMatchObject({ lang: "hi", chartStyle: "south" });
   });
+  it("toggles and updates daily horoscope reminder preferences", () => {
+    expect(usePreferences.getState()).toMatchObject({
+      dailyHoroscopeEnabled: false,
+      dailyHoroscopeHour: 8,
+      dailyHoroscopeMinute: 0,
+      notificationPermissionAsked: false,
+    });
+    usePreferences.getState().setDailyHoroscopeEnabled(true);
+    usePreferences.getState().setDailyHoroscopeTime(6, 45);
+    usePreferences.getState().setNotificationPermissionAsked(true);
+    expect(usePreferences.getState()).toMatchObject({
+      dailyHoroscopeEnabled: true,
+      dailyHoroscopeHour: 6,
+      dailyHoroscopeMinute: 45,
+      notificationPermissionAsked: true,
+    });
+  });
 });
 
 describe("retry policy", () => {

@@ -51,10 +51,11 @@ export default function HoroscopeScreen() {
 
   const savedQuery = useKundliList("");
   const saved = isSignedIn ? (savedQuery.data ?? []) : [];
+  const hasSavedKundli = isLoaded && isSignedIn && saved.length > 0;
 
   const validDay = isValidDate(day);
   const activePlace = place ?? DEFAULT_PLACE;
-  const rashiReq = mode === "rashi" && validDay
+  const rashiReq = mode === "rashi" && hasSavedKundli && validDay
     ? { day, tz: activePlace.tz, lat: activePlace.lat, lon: activePlace.lon, lang }
     : null;
   const rashiQuery = useDailyHoroscope(rashiReq);
@@ -62,16 +63,47 @@ export default function HoroscopeScreen() {
   const selectedKundli: Kundli | undefined = saved.find((x) => x.id === kid) ?? saved[0];
   const activeKid = selectedKundli?.id || "";
   const personalQuery = useDailyReport(
-    mode === "kundli" && isSignedIn && validDay ? (selectedKundli ?? null) : null,
+    mode === "kundli" && hasSavedKundli && validDay ? (selectedKundli ?? null) : null,
     lang,
     day,
-    mode === "kundli" && isSignedIn && validDay && !!selectedKundli,
+    mode === "kundli" && hasSavedKundli && validDay && !!selectedKundli,
   );
 
   const signs = rashiQuery.data?.signs ?? [];
   const activeSign: DailyRashiSign | undefined = selectedSign
     ? signs.find((x) => x.sign === selectedSign)
     : undefined;
+
+  const renderAccessGate = (title: string) => {
+    if (!isLoaded || (isSignedIn && savedQuery.isPending)) {
+      return <SkeletonCards count={1} lines={2} />;
+    }
+    if (!isSignedIn) {
+      return (
+        <EmptyState
+          testID="horoscope-auth-gate"
+          title={title}
+          message={t("auth_horoscope_required")}
+          action={{
+            label: t("auth_sign_in"),
+            icon: "log-in-outline",
+            onPress: () => router.push({ pathname: "/(auth)/sign-in", params: { redirectTo: "/(tabs)/horoscope" } }),
+          }}
+        />
+      );
+    }
+    if (savedQuery.isError) {
+      return <ErrorState error={savedQuery.error} onRetry={() => void savedQuery.refetch()} />;
+    }
+    return (
+      <EmptyState
+        testID="horoscope-create-kundli-gate"
+        title={title}
+        message={t("horoscope_need_kundli")}
+        action={{ label: t("new_kundli"), icon: "add", onPress: () => router.push("/kundli/new") }}
+      />
+    );
+  };
 
   return (
     <Screen testID="horoscope-screen">
@@ -89,44 +121,29 @@ export default function HoroscopeScreen() {
       />
 
       <Card>
-        <DateField
-          testID="horoscope-date"
-          label={t("date")}
-          value={day}
-          onChange={setDay}
-          error={validDay ? null : t("err_date_format")}
-        />
-
-        {mode === "rashi" ? (
-          <PlaceSearch
-            testID="horoscope-place"
-            label={t("place")}
-            value={place}
-            onSelect={setPlace}
-            placeholder={t("city_ph")}
-          />
+        {!hasSavedKundli ? (
+          renderAccessGate(mode === "rashi" ? t("by_rashi") : t("by_kundli"))
         ) : (
-          <View>
-            <Text variant="label" style={s.fieldLabel}>{t("choose_saved")}</Text>
-            {!isLoaded ? (
-              <SkeletonCards count={1} lines={2} />
-            ) : !isSignedIn ? (
-              <EmptyState
-                title={t("by_kundli")}
-                message={t("auth_horoscope_required")}
-                action={{ label: t("auth_sign_in"), icon: "log-in-outline", onPress: () => router.push("/(auth)/sign-in") }}
-              />
-            ) : savedQuery.isPending ? (
-              <SkeletonCards count={1} lines={2} />
-            ) : savedQuery.isError ? (
-              <ErrorState error={savedQuery.error} onRetry={() => void savedQuery.refetch()} />
-            ) : !saved.length ? (
-              <EmptyState
-                message={t("no_saved")}
-                action={{ label: t("new_kundli"), icon: "add", onPress: () => router.push("/kundli/new") }}
+          <>
+            <DateField
+              testID="horoscope-date"
+              label={t("date")}
+              value={day}
+              onChange={setDay}
+              error={validDay ? null : t("err_date_format")}
+            />
+
+            {mode === "rashi" ? (
+              <PlaceSearch
+                testID="horoscope-place"
+                label={t("place")}
+                value={place}
+                onSelect={setPlace}
+                placeholder={t("city_ph")}
               />
             ) : (
-              <>
+              <View>
+                <Text variant="label" style={s.fieldLabel}>{t("choose_saved")}</Text>
                 <View style={s.kundliPickerRow}>
                   <Button
                     testID="horoscope-kundli-picker"
@@ -171,13 +188,13 @@ export default function HoroscopeScreen() {
                     })}
                   </View>
                 )}
-              </>
+              </View>
             )}
-          </View>
+          </>
         )}
       </Card>
 
-      {validDay && (mode === "rashi" || (isSignedIn && !!selectedKundli)) && (
+      {hasSavedKundli && validDay && (mode === "rashi" || !!selectedKundli) && (
         <EmailShareSection
           kind={mode}
           sign={selectedSign || "Aries"}
@@ -189,7 +206,7 @@ export default function HoroscopeScreen() {
         />
       )}
 
-      {mode === "rashi" && validDay && (
+      {mode === "rashi" && hasSavedKundli && validDay && (
         <QueryView query={rashiQuery} skeleton={<SkeletonCards count={3} lines={4} />}>
           {(d) => {
             const p = d.panchang;

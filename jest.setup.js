@@ -15,6 +15,44 @@ jest.mock("expo-auth-session", () => ({
   makeRedirectUri: jest.fn(() => "jyotishlab://oauth-native-callback"),
 }));
 
+jest.mock("expo-network", () => ({
+  NetworkStateType: {
+    NONE: "NONE",
+    UNKNOWN: "UNKNOWN",
+    WIFI: "WIFI",
+    CELLULAR: "CELLULAR",
+  },
+  getNetworkStateAsync: jest.fn(async () => ({
+    type: "WIFI",
+    isConnected: true,
+    isInternetReachable: true,
+  })),
+  addNetworkStateListener: jest.fn(() => ({ remove: jest.fn() })),
+  useNetworkState: jest.fn(() => ({
+    type: "WIFI",
+    isConnected: true,
+    isInternetReachable: true,
+  })),
+}));
+
+jest.mock("expo-notifications", () => ({
+  DEFAULT_ACTION_IDENTIFIER: "expo.modules.notifications.actions.DEFAULT",
+  AndroidImportance: { DEFAULT: 5, HIGH: 6, MAX: 7 },
+  SchedulableTriggerInputTypes: { DAILY: "daily", DATE: "date" },
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn(async () => null),
+  getPermissionsAsync: jest.fn(async () => ({ status: "granted", granted: true, canAskAgain: true })),
+  requestPermissionsAsync: jest.fn(async () => ({ status: "granted", granted: true, canAskAgain: true })),
+  getExactAlarmPermissionsAsync: jest.fn(async () => ({ status: "granted", granted: true, canAskAgain: true })),
+  requestExactAlarmPermissionsAsync: jest.fn(async () => ({ status: "granted", granted: true, canAskAgain: true })),
+  scheduleNotificationAsync: jest.fn(async () => "daily-horoscope-reminder"),
+  getNextTriggerDateAsync: jest.fn(async () => Date.now() + 60_000),
+  cancelScheduledNotificationAsync: jest.fn(async () => {}),
+  useLastNotificationResponse: jest.fn(() => null),
+  clearLastNotificationResponse: jest.fn(),
+  clearLastNotificationResponseAsync: jest.fn(async () => {}),
+}));
+
 jest.mock("@clerk/expo/token-cache", () => ({
   tokenCache: {},
 }));
