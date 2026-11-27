@@ -27,6 +27,10 @@ export default function TabLayout() {
         title: t("nav_home"), headerTitle: brandTitle,
         tabBarIcon: ({ focused, color }) => <TabIcon name="albums" focused={focused} color={color} />,
       }} />
+      <Tabs.Screen name="horoscope" options={{
+        title: t("nav_horoscope"),
+        tabBarIcon: ({ focused, color }) => <TabIcon name="sparkles" focused={focused} color={color} />,
+      }} />
       <Tabs.Screen name="panchang" options={{
         title: t("nav_panchang"),
         tabBarIcon: ({ focused, color }) => <TabIcon name="sunny" focused={focused} color={color} />,

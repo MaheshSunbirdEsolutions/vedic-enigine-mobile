@@ -2,7 +2,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { engineApi, queryKeys, type ReportId } from "@/api";
 import { birthOf, nowIn, todayIn } from "@/domain/birth";
-import type { Birth, Chart, Dasha, Lang, PanchangRequest, SadeSati } from "@/types/api";
+import type {
+  Birth, Chart, DailyHoroscopeRequest, Dasha, Lang, PanchangRequest, SadeSati,
+} from "@/types/api";
 
 /**
  * While a query for the same kundli in the other language loads, keep showing the previous
@@ -63,6 +65,43 @@ export function usePanchang(req: PanchangRequest | null) {
     queryKey: req ? queryKeys.panchang(req.day, req.lat, req.lon, req.tz) : ["panchang", "idle"],
     queryFn: ({ signal }) => engineApi.astro.panchang(req!, { signal }),
     enabled: !!req,
+  });
+}
+
+/** 12-Rashi daily horoscope for a date and place. Keeps previous language text while switching. */
+export function useDailyHoroscope(req: DailyHoroscopeRequest | null) {
+  const queryKey = req
+    ? queryKeys.dailyHoroscope(req.day ?? "", req.lat ?? 28.6139, req.lon ?? 77.209, req.tz ?? "Asia/Kolkata", req.lang)
+    : (["horoscope", "daily", "idle"] as const);
+  return useQuery({
+    queryKey,
+    queryFn: ({ signal }) => engineApi.astro.dailyHoroscope(req!, { signal }),
+    placeholderData: (prev, prevQuery) => (req ? keepAcrossLanguage(prev, prevQuery, queryKey, 2) : undefined),
+    enabled: !!req,
+  });
+}
+
+/** Personalized daily horoscope report for a kundli on `day`. */
+export function useDailyReport(k: Birth | null, lang: Lang, day: string, enabled = true) {
+  const b = k ? birthOf(k) : null;
+  const queryKey = b ? queryKeys.dailyReport(b, lang, day) : (["report", "daily", "idle"] as const);
+  return useQuery({
+    queryKey,
+    queryFn: ({ signal }) => engineApi.reports.daily({ ...b!, lang, day, at: nowIn(b!.tz) }, { signal }),
+    placeholderData: (prev, prevQuery) => (b ? keepAcrossLanguage(prev, prevQuery, queryKey, 2) : undefined),
+    staleTime: 30 * 60_000,
+    enabled: !!b && enabled,
+  });
+}
+
+/** SMTP configuration status for daily horoscope email sharing. */
+export function useEmailStatus(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.emailStatus,
+    queryFn: ({ signal }) => engineApi.email.status({ signal }),
+    staleTime: 5 * 60_000,
+    retry: false,
+    enabled,
   });
 }
 

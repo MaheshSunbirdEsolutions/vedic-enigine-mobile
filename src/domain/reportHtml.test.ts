@@ -26,9 +26,32 @@ const kundli: Kundli = {
 
 const translator = createTranslator("en", en as I18nBundle);
 
+const dailySample = {
+  date: "2026-11-27",
+  rating: "good",
+  rating_label: "Good",
+  summary: "2026-11-27: overall a Good day.",
+  panchang: {
+    vara: "Friday",
+    tithi: { paksha: "Shukla", name: "Tritiya" },
+    nakshatra: { name: "Mrigashira", ends: "2026-11-27T14:20:00+05:30" },
+    rahu_kaal: { start: "2026-11-27T10:30:00+05:30", end: "2026-11-27T12:00:00+05:30" },
+  },
+  chandrabala: { moon_sign: "Gemini", house_from_moon: 3, label: "Favourable", bindus: 5 },
+  tarabala: { name: "Mitra", good: true, meaning: "Friendly" },
+  dasha_now: ["Jupiter", "Saturn", "Ketu"],
+  guidance: { favour: ["Routine work"], avoid: ["Rahu Kaal"] },
+  daily_tip: { planet: "Venus", colour: "cream", practice: "Stay calm", mantra: "Om", daana: "White rice" },
+  areas: [{ area: "career", title: "Career", rating: "good", rating_label: "Good", reasons: ["Supportive Moon"] }],
+  transits: [{ planet: "Moon", sign: "Gemini", nakshatra: "Mrigashira", house_from_moon: 3, house_from_lagna: 11, bindus: 5, text: "Favourable" }],
+  method: "Chandrabala + Tarabala",
+  disclaimer: "General tendencies.",
+};
+
 describe("buildReportHtml", () => {
   const cases: [ReportExportKey, string, unknown, string][] = [
     ["simple", "Simple summary", simple, simple.sections[0].title],
+    ["daily", "Daily horoscope", dailySample, dailySample.summary],
     ["lifepred", "Life-long prediction", lifelong, lifelong.story.chapters[0].title],
     ["yearpred", "Year-wise prediction", yearly, "2026: overall a challenging year."],
     ["issues", "Current issues", issues, "Health &amp; vitality"],

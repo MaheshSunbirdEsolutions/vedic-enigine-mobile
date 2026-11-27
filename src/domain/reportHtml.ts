@@ -10,7 +10,7 @@ import { describeBirth } from "./birth";
 import { formatDate, humanize } from "./format";
 
 export type ReportExportKey =
-  | "simple" | "lifepred" | "yearpred" | "issues" | "wrong" | "full"
+  | "simple" | "daily" | "lifepred" | "yearpred" | "issues" | "wrong" | "full"
   | "life" | "varsh" | "lk" | "nak" | "tirtha" | "bhrigu";
 
 type Json = any;
@@ -232,6 +232,48 @@ function simpleBody(r: SimpleReport, tr: Translator): string {
     )
     .join("");
   return `${badge}${secs}${note(r.closing ?? "")}`;
+}
+
+function dailyBody(r: Json, tr: Translator): string {
+  const p0 = r.panchang ?? {};
+  const cb = r.chandrabala ?? {};
+  const tb = r.tarabala;
+  const tip = r.daily_tip;
+  const tm = (s?: string) => (s ? s.slice(11, 16) : "");
+  const stats = statsGrid([
+    { label: `${tr.t("vara")} / ${tr.t("tithi")}`, value: `${tr.T(p0.vara)} · ${tr.T(p0.tithi?.paksha)} ${tr.T(p0.tithi?.name)}` },
+    { label: tr.t("nakshatra"), value: `${tr.T(p0.nakshatra?.name)} (${tr.t("ends")} ${tm(p0.nakshatra?.ends)})` },
+    { label: tr.t("chandrabala"), value: `${tr.T(cb.moon_sign)} (${cb.house_from_moon}) · ${cb.label} (${tr.t("bindus")}: ${cb.bindus})` },
+    ...(tb ? [{ label: tr.t("tarabala"), value: `${tb.name} · ${tb.meaning}` }] : []),
+    ...(r.dasha_now?.length ? [{ label: tr.t("running_now"), value: r.dasha_now.map(tr.T).join(" / ") }] : []),
+    { label: tr.t("rahu_kaal"), value: `${tm(p0.rahu_kaal?.start)}–${tm(p0.rahu_kaal?.end)}` },
+  ]);
+  const tipHtml = tip
+    ? `<div class="card"><strong>${esc(tr.t("daily_tip"))} · ${esc(tr.T(tip.planet))}</strong>
+        ${labelLine(tr.t("lucky_colour"), tip.colour ?? "")}
+        ${p(tip.practice ?? "")}
+        ${note(`${tr.t("sys_mantra")}: ${tip.mantra ?? ""} · ${tr.t("daana")}: ${tip.daana ?? ""}`)}
+      </div>`
+    : "";
+  const areasHtml = (r.areas ?? [])
+    .map((a: Json) => `<div class="card"><div class="card-head"><strong>${esc(a.title)}</strong>${tag(a.rating_label, toneOfRating(a.rating))}</div>${bullets(a.reasons ?? [])}</div>`)
+    .join("");
+  const transitsHtml = table(
+    [tr.t("graha"), tr.t("sign"), tr.t("nakshatra"), tr.t("house"), tr.t("bindus"), ""],
+    (r.transits ?? []).map((x: Json) => [
+      tr.T(x.planet), tr.T(x.sign), tr.T(x.nakshatra), `${x.house_from_moon}/${x.house_from_lagna ?? ""}`, String(x.bindus ?? "—"), x.text ?? "",
+    ]),
+  );
+  return `<p>${tag(`${formatDate(r.date, tr.lang)} · ${r.rating_label}`, toneOfRating(r.rating))}</p>
+    ${p(r.summary ?? "")}
+    ${stats}
+    <div class="card"><strong>${esc(tr.t("daily_favour"))}</strong>${bullets(r.guidance?.favour ?? [])}</div>
+    <div class="card"><strong>${esc(tr.t("daily_avoid"))}</strong>${bullets(r.guidance?.avoid ?? [])}</div>
+    ${tipHtml}
+    ${h3(tr.t("area_outlook"))}${areasHtml}
+    ${h3(tr.t("transits_today"))}${transitsHtml}
+    ${note(`${tr.t("method")}: ${r.method ?? ""}`)}
+    ${note(r.disclaimer ?? "")}`;
 }
 
 function lifelongBody(r: Json, tr: Translator): string {
@@ -467,6 +509,7 @@ function bhriguBody(r: Json, tr: Translator): string {
 
 const FORMATTERS: Record<ReportExportKey, (data: Json, tr: Translator) => string> = {
   simple: simpleBody,
+  daily: dailyBody,
   lifepred: lifelongBody,
   yearpred: yearlyBody,
   issues: issuesBody,

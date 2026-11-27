@@ -8,7 +8,7 @@ import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring } f
 import { Icon } from "@/components/ui";
 import { makeStyles, motion, radius } from "@/theme";
 
-type Base = "albums" | "sunny" | "heart" | "settings";
+type Base = "albums" | "sparkles" | "sunny" | "heart" | "settings";
 
 export function TabIcon({ name, focused, color }: { name: Base; focused: boolean; color: ColorValue }) {
   const s = useStyles();
@@ -30,6 +30,6 @@ export function TabIcon({ name, focused, color }: { name: Base; focused: boolean
 }
 
 const useStyles = makeStyles((t) => ({
-  wrap: { width: 60, height: 30, alignItems: "center", justifyContent: "center" },
-  pill: { position: "absolute", width: 60, height: 30, borderRadius: radius.pill, backgroundColor: t.colors.accentSoft },
+  wrap: { width: 54, height: 30, alignItems: "center", justifyContent: "center" },
+  pill: { position: "absolute", width: 54, height: 30, borderRadius: radius.pill, backgroundColor: t.colors.accentSoft },
 }));

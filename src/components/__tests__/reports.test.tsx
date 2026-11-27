@@ -44,7 +44,8 @@ jest.mock("@/api", () => ({
   ...jest.requireActual("@/api"),
   engineApi: {
     astro: { chart: jest.fn(), dasha: jest.fn(), sadeSati: jest.fn() },
-    reports: { simple: jest.fn(), raw: jest.fn(), bookStatus: jest.fn() },
+    reports: { simple: jest.fn(), daily: jest.fn(), raw: jest.fn(), bookStatus: jest.fn() },
+    email: { status: jest.fn(), previewHoroscope: jest.fn(), sendHoroscope: jest.fn() },
   },
 }));
 const mockApi = jest.requireMock("@/api").engineApi;
@@ -96,9 +97,9 @@ describe("Reports tab", () => {
     mockApi.reports.raw.mockImplementation((id: string) => Promise.resolve({ lifelong, yearly }[id as "lifelong" | "yearly"]));
   });
 
-  it("offers all 12 reports without Expand all", async () => {
+  it("offers all 13 reports without Expand all", async () => {
     await renderWithProviders(<ReportsTab kundli={K} />);
-    expect(REPORTS).toHaveLength(12);
+    expect(REPORTS).toHaveLength(13);
     for (const r of REPORTS) expect(screen.getByTestId(`report-${r.key}`)).toBeTruthy();
     expect(screen.queryByTestId("expand-all")).toBeNull();
     expect(screen.queryByText(/web app/i)).toBeNull();
@@ -135,5 +136,43 @@ describe("Reports tab", () => {
     await waitFor(() => expect(screen.getByText(yearly.summary)).toBeTruthy());
     await fireEvent.press(screen.getByTestId("year-next"));
     await waitFor(() => expect(mockApi.reports.raw).toHaveBeenLastCalledWith("yearly", expect.objectContaining({ year: new Date().getFullYear() + 1 }), expect.anything()));
+  });
+
+  it("loads the daily horoscope report sub-tab", async () => {
+    mockApi.reports.daily.mockResolvedValue({
+      date: "2026-11-27",
+      tz: "Asia/Kolkata",
+      score: 1.2,
+      rating: "good",
+      rating_label: "Good",
+      summary: "Personalized daily report summary",
+      panchang: {
+        vara: "Friday",
+        vara_lord: "Venus",
+        tithi: { number: 3, name: "Tritiya", paksha: "Shukla", ends: "2026-11-27T18:00:00+05:30" },
+        nakshatra: { name: "Mrigashira", ends: "2026-11-27T15:10:00+05:30" },
+        yoga: { name: "Shubha", ends: "2026-11-27T20:00:00+05:30" },
+        karana: { name: "Taitila", ends: "2026-11-27T12:00:00+05:30" },
+        sunrise: "2026-11-27T06:53:00+05:30",
+        sunset: "2026-11-27T17:24:00+05:30",
+        rahu_kaal: { start: "2026-11-27T10:30:00+05:30", end: "2026-11-27T12:00:00+05:30" },
+      },
+      chandrabala: { moon_sign: "Gemini", house_from_moon: 3, house_from_lagna: 11, favourable: true, chandrashtama: false, status: "good", label: "Favourable", bindus: 5, sav: 30, note: "Good" },
+      tarabala: null,
+      yogas: [],
+      cautions: [],
+      dasha_now: ["Jupiter", "Saturn", "Ketu"],
+      areas: [],
+      transits: [],
+      guidance: { favour: ["Work steadily"], avoid: ["Rahu Kaal"] },
+      daily_tip: null,
+      week: [],
+      method: "Chandrabala",
+      disclaimer: "General tendencies.",
+    });
+    await renderWithProviders(<ReportsTab kundli={K} />);
+    await fireEvent.press(screen.getByTestId("report-daily"));
+    expect(await screen.findByText("Personalized daily report summary")).toBeTruthy();
+    expect(screen.getByTestId("report-daily-date")).toBeTruthy();
   });
 });
