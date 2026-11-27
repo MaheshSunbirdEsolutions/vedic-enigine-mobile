@@ -5,6 +5,8 @@
  */
 import { useState } from "react";
 import { View } from "react-native";
+import { DateField } from "@/components/form/DateField";
+import { DailyView } from "@/components/horoscope/DailyView";
 import {
   BhriguReport, DoshaReport, FullReport, IssuesReport, LalKitabReport, LifeAreasReport, LifelongReport,
   NakshatraReport, TirthaReport, VarshphalReport, YearlyReport,
@@ -12,7 +14,9 @@ import {
 import type { Json } from "@/components/reports/parts";
 import { Button, FadeSwitch, IconButton, InlineError, QueryView, SegmentedControl, SkeletonCards, Text } from "@/components/ui";
 import type { ReportId } from "@/api";
-import { useBookStatus, useChartBundle, useReport, useSimpleReport } from "@/hooks/useAstro";
+import { todayIn } from "@/domain/birth";
+import { isValidDate } from "@/domain/birthForm";
+import { useBookStatus, useChartBundle, useDailyReport, useReport, useSimpleReport } from "@/hooks/useAstro";
 import { useReportExport } from "@/hooks/useReportExport";
 import { useI18n } from "@/i18n/I18nProvider";
 import { makeStyles, radius, spacing } from "@/theme";
@@ -22,6 +26,7 @@ import { SimpleReportView } from "./SimpleReportView";
 /** Same order and labels as the web app. "wrong" and "full" share one engine report. */
 export const REPORTS = [
   { key: "simple", ep: "simple", label: "rep_simple" },
+  { key: "daily", ep: "daily", label: "rep_daily" },
   { key: "lifepred", ep: "lifelong", label: "rep_life_pred" },
   { key: "yearpred", ep: "yearly", label: "rep_year_pred" },
   { key: "issues", ep: "issues", label: "rep_issues" },
@@ -43,17 +48,21 @@ export function ReportsTab({ kundli }: { kundli: Kundli }) {
   const s = useStyles();
   const [rep, setRep] = useState<ReportKey>("simple");
   const [year, setYear] = useState(() => new Date().getFullYear());
+  const [day, setDay] = useState(() => todayIn(kundli.tz));
   const cur = REPORTS.find((r) => r.key === rep)!;
   const isSimple = rep === "simple";
+  const isDaily = rep === "daily";
+  const validDay = isValidDate(day);
   const simple = useSimpleReport(kundli, lang, isSimple);
-  const detailed = useReport<Json>(cur.ep as ReportId, kundli, lang, year, !isSimple);
+  const daily = useDailyReport(kundli, lang, day, isDaily && validDay);
+  const detailed = useReport<Json>(cur.ep as ReportId, kundli, lang, year, !isSimple && !isDaily);
   const books = useBookStatus().data ?? { lalkitab: 0, bhrigu: 0 };
   const chart = useChartBundle(kundli).data?.chart;
 
-  const activeQuery = isSimple ? simple : detailed;
+  const activeQuery = isSimple ? simple : isDaily ? daily : detailed;
   const isSubTabAvailable =
     activeQuery.isSuccess && !activeQuery.isPending && !activeQuery.isError && !activeQuery.isPlaceholderData && !!activeQuery.data;
-  const subTabKey = `${rep}:${year}:${lang}`;
+  const subTabKey = `${rep}:${isDaily ? day : year}:${lang}`;
   const { busyAction, exportError, printReport, downloadPdf } = useReportExport(subTabKey);
 
   const exportInput = {
@@ -70,9 +79,13 @@ export function ReportsTab({ kundli }: { kundli: Kundli }) {
       <SegmentedControl<ReportKey> scroll testID="report" value={rep} onChange={setRep}
         segments={REPORTS.map((r) => ({ value: r.key, label: t(r.label) }))} />
 
-      {(YEAR_REPORTS.includes(rep) || isSubTabAvailable) && (
+      {(YEAR_REPORTS.includes(rep) || isDaily || isSubTabAvailable) && (
         <View style={s.tools}>
-          {YEAR_REPORTS.includes(rep) ? (
+          {isDaily ? (
+            <View style={s.dayWrap}>
+              <DateField testID="report-daily-date" label={t("date")} value={day} onChange={setDay} error={validDay ? null : t("err_date_format")} />
+            </View>
+          ) : YEAR_REPORTS.includes(rep) ? (
             <View style={s.year} accessibilityLabel={t("year")}>
               <IconButton icon="chevron-back" size={34} label={`${t("year")} ${year - 1}`} onPress={() => setYear((y) => y - 1)} testID="year-prev" />
               <Text weight="semibold" style={s.yearText}>{year}</Text>
@@ -103,6 +116,10 @@ export function ReportsTab({ kundli }: { kundli: Kundli }) {
       <FadeSwitch id={rep}>
         {isSimple ? (
           <QueryView query={simple} skeleton={<SkeletonCards count={4} />}>{(r) => <SimpleReportView report={r} />}</QueryView>
+        ) : isDaily ? (
+          <QueryView query={daily} skeleton={<SkeletonCards count={4} lines={4} />}>
+            {(r) => <DailyView r={r} kundli={kundli} onSelectDay={setDay} />}
+          </QueryView>
         ) : (
           <QueryView query={detailed} skeleton={<SkeletonCards count={4} lines={4} />}>
             {(r) => (
@@ -129,6 +146,7 @@ export function ReportsTab({ kundli }: { kundli: Kundli }) {
 
 const useStyles = makeStyles((t) => ({
   tools: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: spacing.sm, marginBottom: spacing.md },
+  dayWrap: { flexGrow: 1, minWidth: 220 },
   year: { flexDirection: "row", alignItems: "center", gap: spacing.sm, backgroundColor: t.colors.fill, borderRadius: radius.pill, padding: 3 },
   yearText: { minWidth: 44, textAlign: "center", fontSize: 15 },
   exportRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.xs },

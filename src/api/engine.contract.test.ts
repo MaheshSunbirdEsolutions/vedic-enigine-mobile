@@ -49,10 +49,13 @@ d("engine contract", () => {
     expect(i.findings[0]).toEqual(expect.objectContaining({ id: expect.any(String), category: expect.any(String), nature: expect.any(String) }));
   });
 
-  it("panchang, match, places", async () => {
+  it("panchang, daily horoscope, match, places", async () => {
     const p = await api.astro.panchang({ day: "2026-11-24", tz: "Asia/Kolkata", lat: 31.7, lon: 76.9 });
     expect(p.tithi).toEqual(expect.objectContaining({ name: expect.any(String), ends: expect.any(String) }));
     expect(p.rahu_kaal.start).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/);
+    const h = await api.astro.dailyHoroscope({ day: "2026-11-24", tz: "Asia/Kolkata", lat: 28.6139, lon: 77.209, lang: "en" });
+    expect(h.signs).toHaveLength(12);
+    expect(h.signs[0]).toEqual(expect.objectContaining({ sign: expect.any(String), areas: expect.any(Array), transits: expect.any(Array), week: expect.any(Array) }));
     const m = await api.astro.match(birth, { ...birth, datetime_local: "1985-03-10T08:00:00" });
     expect(m.max).toBe(36);
     expect(Object.keys(m.kootas)).toHaveLength(8);
@@ -70,6 +73,7 @@ d("engine contract", () => {
   });
 
   it.each([
+    ["daily", ["date", "rating", "chandrabala", "areas", "transits", "guidance", "week"]],
     ["lifelong", ["overview", "journey", "milestones", "life_areas", "story"]],
     ["yearly", ["year", "summary", "areas", "periods", "transits", "months", "years"]],
     ["issues", ["issues", "remedy_days", "health_watch", "rin", "natal_afflictions"]],

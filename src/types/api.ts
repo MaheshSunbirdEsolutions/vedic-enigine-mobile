@@ -134,7 +134,196 @@ export type SimpleReport = {
   sections: SimpleSection[];
   closing: string;
 };
-export type ReportRequest = Birth & { lang: Lang; year?: number; at?: string };
+export type ReportRequest = Birth & { lang: Lang; year?: number; day?: string; at?: string };
+
+// ---------- horoscope & daily report ----------
+export type DailyHoroscopeRequest = { day?: string; tz?: string; lat?: number; lon?: number; lang: Lang };
+
+export type DailyTransit = {
+  planet: string;
+  sign: string;
+  nakshatra: string;
+  house_from_moon: number;
+  house_from_lagna?: number;
+  good: boolean;
+  bindus?: number | null;
+  score: number;
+  text: string;
+};
+
+export type DailyArea = {
+  area: string;
+  title: string;
+  score: number;
+  rating: Rating;
+  rating_label: string;
+  text?: string;
+  reasons: string[];
+};
+
+export type DailyTip = {
+  planet: string;
+  colour: string;
+  mantra: string;
+  practice: string;
+  daana: string;
+};
+
+export type DailyPanchangSummary = {
+  vara: string;
+  vara_lord: string;
+  tithi: Panchang["tithi"];
+  nakshatra: Panchang["nakshatra"];
+  yoga: Panchang["yoga"];
+  karana: Panchang["karana"];
+  sunrise: string;
+  sunset: string;
+  rahu_kaal: Panchang["rahu_kaal"];
+};
+
+export type DailyRashiWeekItem = {
+  date: string;
+  weekday: string;
+  moon_sign: string;
+  nakshatra: string;
+  moon_house: number;
+  chandrashtama: boolean;
+  score: number;
+  rating: Rating;
+  rating_label: string;
+};
+
+export type DailyRashiSign = {
+  sign: string;
+  sign_index: number;
+  lord: string;
+  score: number;
+  rating: Rating;
+  rating_label: string;
+  moon_house: number;
+  moon_good: boolean;
+  chandrashtama: boolean;
+  ghat_nakshatra: boolean;
+  ghat_nakshatra_name: string;
+  saturn_phase?: string | null;
+  summary: string;
+  overview: string;
+  highlights: string[];
+  areas: DailyArea[];
+  guidance: { favour: string[]; avoid: string[] };
+  transits: DailyTransit[];
+  week: DailyRashiWeekItem[];
+  colour: string;
+  lucky_numbers: number[];
+  deity: string;
+  daana: string;
+  tip: string;
+  mantra: string;
+  favorable_transits: string[];
+  care_transits: string[];
+  health_watch?: { parts: string; watch: string } | null;
+};
+
+export type DailyHoroscopeResponse = {
+  date: string;
+  tz: string;
+  panchang: DailyPanchangSummary;
+  moon_sign: string;
+  yogas: string[];
+  cautions: string[];
+  signs: DailyRashiSign[];
+  disclaimer: string;
+};
+
+export type DailyReportWeekItem = {
+  date: string;
+  weekday: string;
+  vara: string;
+  nakshatra: string;
+  moon_sign: string;
+  house_from_moon: number;
+  chandrashtama: boolean;
+  tara: string;
+  tara_good: boolean | null;
+  score: number;
+  rating: Rating;
+  rating_label: string;
+};
+
+export type DailyReport = {
+  date: string;
+  tz: string;
+  score: number;
+  rating: Rating;
+  rating_label: string;
+  summary: string;
+  panchang: DailyPanchangSummary;
+  chandrabala: {
+    moon_sign: string;
+    house_from_moon: number;
+    house_from_lagna: number;
+    favourable: boolean;
+    chandrashtama: boolean;
+    status: string;
+    label: string;
+    bindus: number;
+    sav: number;
+    note: string;
+  };
+  tarabala?: { index: number; name: string; good: boolean | null; meaning: string } | null;
+  yogas: string[];
+  cautions: string[];
+  dasha_now: string[];
+  dasha_reading?: { rating_label: string; [k: string]: unknown } | null;
+  sade_sati?: Record<string, unknown>;
+  areas: DailyArea[];
+  transits: DailyTransit[];
+  guidance: { favour: string[]; avoid: string[] };
+  daily_tip?: DailyTip | null;
+  week: DailyReportWeekItem[];
+  method: string;
+  disclaimer: string;
+};
+
+// ---------- email share ----------
+export type EmailStatus = {
+  configured: boolean;
+  host: string;
+  port: number;
+  security: string;
+  from_email: string;
+};
+
+export type EmailHoroscopeRequest = {
+  to_email?: string;
+  kind: "rashi" | "kundli";
+  sign?: string;
+  kundli_id?: string;
+  name?: string;
+  datetime_local?: string;
+  tz: string;
+  lat: number;
+  lon: number;
+  settings?: ChartSettings;
+  lang: Lang;
+  day?: string;
+  preview_only?: boolean;
+};
+
+export type EmailPreviewResponse = {
+  subject: string;
+  text: string;
+  html: string;
+  date: string;
+};
+
+export type EmailSendResponse = {
+  sent: boolean;
+  to: string[];
+  subject: string;
+  date: string;
+  status: EmailStatus;
+};
 
 // ---------- ask ----------
 export type AskSection = { kind?: string; title: string; paras: string[]; verdict?: string };

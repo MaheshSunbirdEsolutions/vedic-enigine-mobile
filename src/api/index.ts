@@ -10,6 +10,7 @@ import { http } from "./http";
 import { askEndpoints } from "./endpoints/ask";
 import { astroEndpoints } from "./endpoints/astro";
 import { authEndpoints } from "./endpoints/auth";
+import { emailEndpoints } from "./endpoints/email";
 import { kundliEndpoints } from "./endpoints/kundlis";
 import { metaEndpoints } from "./endpoints/meta";
 import { reportEndpoints } from "./endpoints/reports";
@@ -20,6 +21,7 @@ export const createEngineApi = (client: HttpClient) => ({
   astro: astroEndpoints(client),
   reports: reportEndpoints(client),
   ask: askEndpoints(client),
+  email: emailEndpoints(client),
   meta: metaEndpoints(client),
 });
 
