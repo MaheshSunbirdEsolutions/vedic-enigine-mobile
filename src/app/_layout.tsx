@@ -3,6 +3,8 @@
  * and the stack navigator with slide transitions and the language switch in every header.
  */
 import { useEffect, useState, type ReactNode } from "react";
+import { ClerkProvider } from "@clerk/expo";
+import { tokenCache } from "@clerk/expo/token-cache";
 import { Fraunces_600SemiBold } from "@expo-google-fonts/fraunces";
 import { Mukta_400Regular, Mukta_500Medium, Mukta_600SemiBold, Mukta_700Bold } from "@expo-google-fonts/mukta";
 import {
@@ -16,8 +18,11 @@ import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { ClerkSync } from "@/auth/ClerkSync";
+import { ClerkAppAuthProvider } from "@/auth/useAppAuth";
+import { HeaderActions } from "@/components/HeaderActions";
 import { ToastProvider } from "@/components/ui";
+import { env } from "@/config/env";
 import { I18nProvider, useI18n } from "@/i18n/I18nProvider";
 import { usePreferences, usePreferencesHydrated } from "@/state/preferences";
 import { createQueryClient } from "@/state/queryClient";
@@ -35,7 +40,7 @@ const FONTS = {
   Mukta_400Regular, Mukta_500Medium, Mukta_600SemiBold, Mukta_700Bold,
 };
 
-const headerRight = () => <LanguageSwitch />;
+const headerRight = () => <HeaderActions />;
 
 /** Theme follows the saved colour preference and the current language's script. */
 function ThemedApp({ children }: { children: ReactNode }) {
@@ -66,6 +71,9 @@ function RootStack({ ready }: { ready: boolean }) {
       <StatusBar style={theme.dark ? "light" : "dark"} />
       <Stack screenOptions={{ ...nav.header, ...nav.stack, headerRight, contentStyle: nav.content, headerBackButtonDisplayMode: "minimal" }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)/sign-in" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)/sign-up" options={{ headerShown: false }} />
+        <Stack.Screen name="oauth-native-callback" options={{ headerShown: false, animation: "none" }} />
         <Stack.Screen name="kundli/new" options={{ title: t("new_kundli") }} />
         <Stack.Screen name="kundli/preview" options={{ title: t("new_kundli") }} />
         <Stack.Screen name="kundli/[id]" options={{ title: t("nav_home") }} />
@@ -80,18 +88,30 @@ export default function RootLayout() {
   const hydrated = usePreferencesHydrated();
   // A font that fails to load falls back to the system font; it never blocks the app.
   const ready = hydrated && (fontsLoaded || !!fontError);
+
+  const tree = (
+    <QueryClientProvider client={queryClient}>
+      <ClerkSync />
+      <I18nProvider>
+        <ThemedApp>
+          <ToastProvider>
+            <RootStack ready={ready} />
+          </ToastProvider>
+        </ThemedApp>
+      </I18nProvider>
+    </QueryClientProvider>
+  );
+
   return (
     <SafeAreaProvider>
       <KeyboardProvider>
-        <QueryClientProvider client={queryClient}>
-          <I18nProvider>
-            <ThemedApp>
-              <ToastProvider>
-                <RootStack ready={ready} />
-              </ToastProvider>
-            </ThemedApp>
-          </I18nProvider>
-        </QueryClientProvider>
+        {env.clerkPublishableKey ? (
+          <ClerkProvider publishableKey={env.clerkPublishableKey} tokenCache={tokenCache}>
+            <ClerkAppAuthProvider>{tree}</ClerkAppAuthProvider>
+          </ClerkProvider>
+        ) : (
+          tree
+        )}
       </KeyboardProvider>
     </SafeAreaProvider>
   );

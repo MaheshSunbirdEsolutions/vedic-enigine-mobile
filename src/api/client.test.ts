@@ -77,4 +77,30 @@ describe("http client", () => {
     await c.request("/h"); base = "http://b"; await c.request("/h");
     expect(f.mock.calls.map((c) => c[0])).toEqual(["http://a/h", "http://b/h"]);
   });
+
+  it("attaches Bearer token when getToken resolves and skips when null or failing", async () => {
+    let token: string | null = "jwt-123";
+    const f = jest.fn().mockResolvedValue(fakeResponse(200, {}));
+    const c = createHttpClient({
+      getBaseUrl: () => "http://e",
+      timeoutMs: 1000,
+      fetchImpl: f,
+      getToken: async () => token,
+    });
+    await c.request("/me");
+    expect(f.mock.calls[0][1].headers.authorization).toBe("Bearer jwt-123");
+
+    token = null;
+    await c.request("/health");
+    expect(f.mock.calls[1][1].headers.authorization).toBeUndefined();
+
+    const failing = createHttpClient({
+      getBaseUrl: () => "http://e",
+      timeoutMs: 1000,
+      fetchImpl: f,
+      getToken: async () => { throw new Error("token unavailable"); },
+    });
+    await failing.request("/health");
+    expect(f.mock.calls[2][1].headers.authorization).toBeUndefined();
+  });
 });

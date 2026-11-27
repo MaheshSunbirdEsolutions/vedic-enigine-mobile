@@ -1,23 +1,27 @@
 /** Saved kundlis: list, detail, save (create/update) and delete, with cache invalidation. */
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { engineApi, queryKeys } from "@/api";
+import { useAppAuth } from "@/auth/useAppAuth";
 import type { Kundli } from "@/types/api";
 
 export function useKundliList(search: string) {
+  const { isLoaded, isSignedIn } = useAppAuth();
   const q = search.trim();
   return useQuery({
     queryKey: queryKeys.kundlis.list(q),
     queryFn: ({ signal }) => engineApi.kundlis.list(q, { signal }),
+    enabled: isLoaded && isSignedIn,
     placeholderData: keepPreviousData, // keep the list on screen while a new search loads
     staleTime: 30_000,
   });
 }
 
 export function useKundli(id: string | undefined) {
+  const { isLoaded, isSignedIn } = useAppAuth();
   return useQuery({
     queryKey: queryKeys.kundlis.detail(id ?? ""),
     queryFn: ({ signal }) => engineApi.kundlis.get(id!, { signal }),
-    enabled: !!id,
+    enabled: !!id && isLoaded && isSignedIn,
   });
 }
 

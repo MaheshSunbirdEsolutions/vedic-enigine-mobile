@@ -11,6 +11,7 @@ export type EnvConfig = {
   engineUrl: string;
   apiTimeoutMs: number;
   appEnv: AppEnv;
+  clerkPublishableKey: string | null;
 };
 
 const DEFAULT_ENGINE_URL = "https://vedic-engine-eight.vercel.app/engine";
@@ -33,11 +34,19 @@ export function parseAppEnv(value: string | undefined): AppEnv {
 }
 
 /** Builds the config from a raw variable map (exported for tests). */
+function normalizePublishableKey(raw: string | undefined): string | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+  if (!trimmed.startsWith("pk_test_") && !trimmed.startsWith("pk_live_")) return null;
+  return trimmed;
+}
+
 export function buildEnv(raw: Record<string, string | undefined>): EnvConfig {
   return {
     engineUrl: normalizeBaseUrl(raw.EXPO_PUBLIC_ENGINE_URL) ?? DEFAULT_ENGINE_URL,
     apiTimeoutMs: parseTimeout(raw.EXPO_PUBLIC_API_TIMEOUT_MS),
     appEnv: parseAppEnv(raw.EXPO_PUBLIC_APP_ENV),
+    clerkPublishableKey: normalizePublishableKey(raw.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY),
   };
 }
 
@@ -45,4 +54,5 @@ export const env: EnvConfig = buildEnv({
   EXPO_PUBLIC_ENGINE_URL: process.env.EXPO_PUBLIC_ENGINE_URL,
   EXPO_PUBLIC_API_TIMEOUT_MS: process.env.EXPO_PUBLIC_API_TIMEOUT_MS,
   EXPO_PUBLIC_APP_ENV: process.env.EXPO_PUBLIC_APP_ENV,
+  EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY,
 });

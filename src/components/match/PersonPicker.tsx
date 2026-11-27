@@ -45,7 +45,7 @@ export function PersonPicker({ title, icon, saved, value, onChange, testID }: {
         </Pressable>
       ))}
       {mode === "manual" && (
-        <BirthForm submitLabel="OK" onSubmit={(k) => { onChange(k); setMode("closed"); }} onCancel={() => setMode("closed")} />
+        <BirthForm submitLabel="OK" requireAuth={false} onSubmit={(k) => { onChange(k); setMode("closed"); }} onCancel={() => setMode("closed")} />
       )}
     </Card>
   );

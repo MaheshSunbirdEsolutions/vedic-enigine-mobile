@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
-import { Button, Card, Chip, ErrorState, Screen, SegmentedControl, Text, TextField } from "@/components/ui";
+import { useRouter } from "expo-router";
+import { queryKeys } from "@/api";
+import { useAppAuth } from "@/auth/useAppAuth";
+import { Button, Card, Chip, ErrorState, Screen, SegmentedControl, Text, TextField, confirmAsync } from "@/components/ui";
 import { env, normalizeBaseUrl } from "@/config/env";
 import { useEngineHealth } from "@/hooks/useEngineHealth";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -14,6 +17,9 @@ import { useQueryClient } from "@tanstack/react-query";
 export default function SettingsScreen() {
   const { t, targetLang, setLang } = useI18n();
   const qc = useQueryClient();
+  const router = useRouter();
+  const { isConfigured, isLoaded, isSignedIn, email, fullName, signOut } = useAppAuth();
+  const [signingOut, setSigningOut] = useState(false);
   const colorScheme = usePreferences((s) => s.colorScheme);
   const setColorScheme = usePreferences((s) => s.setColorScheme);
   const chartStyle = usePreferences((s) => s.chartStyle);
@@ -32,8 +38,50 @@ export default function SettingsScreen() {
     void qc.invalidateQueries(); // everything came from the previous engine
   };
 
+  const handleSignOut = async () => {
+    if (!(await confirmAsync(t("auth_confirm_sign_out"), t("auth_sign_out"), t("cancel")))) return;
+    setSigningOut(true);
+    try {
+      await signOut();
+      qc.removeQueries({ queryKey: queryKeys.kundlis.all });
+      qc.removeQueries({ queryKey: queryKeys.me });
+    } finally {
+      setSigningOut(false);
+    }
+  };
+
   return (
     <Screen testID="settings-screen">
+      <Card icon="person-circle-outline" title={t("auth_account")}>
+        {!isConfigured ? (
+          <Text variant="small">{t("auth_missing_key")}</Text>
+        ) : !isLoaded ? (
+          <Text variant="muted">{t("loading")}</Text>
+        ) : isSignedIn ? (
+          <View>
+            {fullName ? <Text weight="semibold">{fullName}</Text> : null}
+            <Text variant="muted" style={styles.accountEmail}>{email ?? t("auth_signed_in_as")}</Text>
+            <View style={styles.row}>
+              <Button
+                testID="settings-sign-out"
+                variant="danger"
+                icon="log-out-outline"
+                label={t("auth_sign_out")}
+                loading={signingOut}
+                onPress={() => void handleSignOut()}
+              />
+            </View>
+          </View>
+        ) : (
+          <View>
+            <Text variant="muted" style={styles.accountEmail}>{t("auth_guest")}</Text>
+            <View style={styles.row}>
+              <Button testID="settings-sign-in" icon="log-in-outline" label={t("auth_sign_in")} onPress={() => router.push("/(auth)/sign-in")} />
+              <Button testID="settings-sign-up" variant="secondary" label={t("auth_sign_up")} onPress={() => router.push("/(auth)/sign-up")} />
+            </View>
+          </View>
+        )}
+      </Card>
       <Card icon="language-outline" title={t("settings_language")}>
         <SegmentedControl<Lang> testID="lang" value={targetLang} onChange={setLang}
           segments={[{ value: "en", label: "English" }, { value: "hi", label: "हिन्दी" }]} />
@@ -67,5 +115,6 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  accountEmail: { marginBottom: spacing.sm },
   meta: { marginTop: spacing.md },
 });

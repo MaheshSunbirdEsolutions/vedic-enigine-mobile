@@ -3,6 +3,7 @@ import type { ReactElement, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, type RenderOptions } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ClerkAppAuthProvider, StaticAuthProvider, type AppAuthState } from "@/auth/useAppAuth";
 import { ToastProvider } from "@/components/ui/Toast";
 import { StaticI18nProvider } from "@/i18n/I18nProvider";
 import { createTranslator } from "@/i18n/translate";
@@ -13,19 +14,27 @@ import hi from "@/__fixtures__/i18n_hi.json";
 export const testQueryClient = () =>
   new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, gcTime: Infinity } } }); // no GC timers keeping Jest alive
 
-export async function renderWithProviders(ui: ReactElement, opts: { lang?: Lang; client?: QueryClient } & RenderOptions = {}) {
-  const client = opts.client ?? testQueryClient();
-  const translator = createTranslator(opts.lang ?? "en", (opts.lang === "hi" ? hi : en) as I18nBundle);
+export async function renderWithProviders(
+  ui: ReactElement,
+  opts: { lang?: Lang; client?: QueryClient; auth?: Partial<AppAuthState> } & RenderOptions = {},
+) {
+  const { lang, client: customClient, auth, ...renderOpts } = opts;
+  const client = customClient ?? testQueryClient();
+  const translator = createTranslator(lang ?? "en", (lang === "hi" ? hi : en) as I18nBundle);
+  const wrapAuth = (node: ReactNode) =>
+    auth ? <StaticAuthProvider value={auth}>{node}</StaticAuthProvider> : <ClerkAppAuthProvider>{node}</ClerkAppAuthProvider>;
   const Wrapper = ({ children }: { children: ReactNode }) => (
     <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } }}>
-    <QueryClientProvider client={client}>
-      <StaticI18nProvider translator={translator}>
-        <ToastProvider>{children}</ToastProvider>
-      </StaticI18nProvider>
-    </QueryClientProvider>
+      {wrapAuth(
+        <QueryClientProvider client={client}>
+          <StaticI18nProvider translator={translator}>
+            <ToastProvider>{children}</ToastProvider>
+          </StaticI18nProvider>
+        </QueryClientProvider>,
+      )}
     </SafeAreaProvider>
   );
-  const result = await render(ui, { wrapper: Wrapper, ...opts });
+  const result = await render(ui, { wrapper: Wrapper, ...renderOpts });
   return { client, ...result };
 }
 

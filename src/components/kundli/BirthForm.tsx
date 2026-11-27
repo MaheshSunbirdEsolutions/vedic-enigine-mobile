@@ -9,11 +9,14 @@
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "expo-router";
 import { Controller, useForm, type FieldErrors } from "react-hook-form";
+import { useAppAuth } from "@/auth/useAppAuth";
 import { DateField } from "@/components/form/DateField";
 import { TimeField12 } from "@/components/form/TimeField12";
 import { Button, Icon, SegmentedControl, Text, TextField } from "@/components/ui";
 import { birthFormSchema, defaultBirthValues, placeFields, toKundli, type BirthFormValues } from "@/domain/birthForm";
+import { kundliToParams } from "@/domain/kundliParams";
 import { useI18n } from "@/i18n/I18nProvider";
 import { makeStyles, spacing, useTheme } from "@/theme";
 import type { Ayanamsa, Gender, Kundli, NodeType } from "@/types/api";
@@ -25,16 +28,21 @@ export type BirthFormProps = {
   submitLabel?: string;
   onCancel?: () => void;
   busy?: boolean;
+  /** Require signed-in session before generating; defaults to true when creating a new kundli. */
+  requireAuth?: boolean;
 };
 
 const COORD_FIELDS = ["lat", "lon", "tz"] as const;
 
-export function BirthForm({ initial, onSubmit, submitLabel, onCancel, busy }: BirthFormProps) {
+export function BirthForm({ initial, onSubmit, submitLabel, onCancel, busy, requireAuth }: BirthFormProps) {
   const { t } = useI18n();
   const s = useStyles();
   const theme = useTheme();
+  const router = useRouter();
+  const { isLoaded, isSignedIn } = useAppAuth();
+  const mustSignIn = requireAuth ?? !initial?.id;
   const [advanced, setAdvanced] = useState(false);
-  const { control, handleSubmit, setValue, trigger, formState: { errors, isSubmitted } } = useForm<BirthFormValues>({
+  const { control, getValues, handleSubmit, setValue, trigger, formState: { errors, isSubmitted } } = useForm<BirthFormValues>({
     resolver: zodResolver(birthFormSchema),
     defaultValues: defaultBirthValues(initial),
     mode: "onTouched",
@@ -47,6 +55,19 @@ export function BirthForm({ initial, onSubmit, submitLabel, onCancel, busy }: Bi
 
   const onInvalid = (e: FieldErrors<BirthFormValues>) => {
     if (COORD_FIELDS.some((k) => e[k]) && !e.place) setAdvanced(true);
+  };
+
+  const onSubmitPress = () => {
+    if (mustSignIn && !isSignedIn) {
+      if (!isLoaded) return;
+      const parsed = birthFormSchema.safeParse(getValues());
+      const params = parsed.success
+        ? { previewParams: JSON.stringify(kundliToParams(toKundli(parsed.data, initial?.id))) }
+        : undefined;
+      router.push(params ? { pathname: "/(auth)/sign-in", params } : "/(auth)/sign-in");
+      return;
+    }
+    void handleSubmit((v) => onSubmit(toKundli(v, initial?.id)), onInvalid)();
   };
 
   return (
@@ -130,7 +151,7 @@ export function BirthForm({ initial, onSubmit, submitLabel, onCancel, busy }: Bi
       )}
       <View style={s.actions}>
         <Button testID="submit-birth" label={submitLabel ?? t("generate")} loading={busy} style={s.flex}
-          onPress={handleSubmit((v) => onSubmit(toKundli(v, initial?.id)), onInvalid)} />
+          onPress={onSubmitPress} />
         {onCancel && <Button label={t("cancel")} variant="secondary" onPress={onCancel} />}
       </View>
     </View>

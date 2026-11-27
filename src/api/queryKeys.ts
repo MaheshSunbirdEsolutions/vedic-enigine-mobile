@@ -25,4 +25,5 @@ export const queryKeys = {
   i18n: (lang: Lang) => ["i18n", lang] as const,
   askStatus: ["ask-status"] as const,
   health: (url: string) => ["health", url] as const,
+  me: ["me"] as const,
 };

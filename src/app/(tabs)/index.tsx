@@ -4,6 +4,7 @@ import { FlatList, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { KundliListItem } from "@/components/kundli/KundliListItem";
+import { useAppAuth } from "@/auth/useAppAuth";
 import { EmptyState, ErrorState, Fab, SkeletonList, Text, TextField, confirmAsync, useToast } from "@/components/ui";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useDeleteKundli, useKundliList } from "@/hooks/useKundlis";
@@ -17,10 +18,11 @@ export default function KundlisScreen() {
   const { t } = useI18n();
   const router = useRouter();
   const toast = useToast();
+  const { isLoaded, isSignedIn } = useAppAuth();
   const [search, setSearch] = useState("");
   const list = useKundliList(useDebouncedValue(search, 250));
   const del = useDeleteKundli();
-  const count = list.data?.length ?? 0;
+  const count = isSignedIn ? (list.data?.length ?? 0) : 0;
 
   const open = useCallback((k: Kundli) => router.push({ pathname: "/kundli/[id]", params: { id: k.id! } }), [router]);
   const remove = useCallback(async (k: Kundli) => {
@@ -34,11 +36,32 @@ export default function KundlisScreen() {
         <Text variant="hero" style={s.flex}>{t("saved_kundlis")}</Text>
         {count > 0 && <View style={s.count}><Text weight="semibold" style={s.countText}>{count}</Text></View>}
       </View>
-      <TextField testID="kundli-search" icon="search" value={search} onChangeText={setSearch} placeholder={t("search")}
-        autoCorrect={false} clearButtonMode="while-editing" returnKeyType="search" />
-      {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
+      {isSignedIn && (
+        <TextField testID="kundli-search" icon="search" value={search} onChangeText={setSearch} placeholder={t("search")}
+          autoCorrect={false} clearButtonMode="while-editing" returnKeyType="search" />
+      )}
+      {isSignedIn && list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
     </View>
   );
+
+  const emptyComponent = !isLoaded
+    ? <SkeletonList />
+    : !isSignedIn
+      ? (
+        <EmptyState
+          title={t("saved_kundlis")}
+          message={t("auth_signed_in_required")}
+          action={{ label: t("auth_sign_in"), icon: "log-in-outline", onPress: () => router.push("/(auth)/sign-in") }}
+        />
+      )
+      : list.isPending
+        ? <SkeletonList />
+        : list.isError
+          ? undefined
+          : (
+            <EmptyState title={search.trim() ? undefined : t("saved_kundlis")} message={search.trim() ? t("no_results") : t("no_saved")}
+              action={search.trim() ? undefined : { label: t("new_kundli"), icon: "add", onPress: () => router.push("/kundli/new") }} />
+          );
 
   return (
     <View style={s.root}>
@@ -46,7 +69,7 @@ export default function KundlisScreen() {
         testID="kundli-list"
         style={s.root}
         contentContainerStyle={s.content}
-        data={list.data ?? []}
+        data={isSignedIn ? (list.data ?? []) : []}
         keyExtractor={(k) => k.id ?? k.datetime_local}
         renderItem={({ item, index }) => (
           <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 40).duration(260)} layout={LinearTransition.springify().damping(18)}>
@@ -54,13 +77,8 @@ export default function KundlisScreen() {
           </Animated.View>
         )}
         ListHeaderComponent={header}
-        ListEmptyComponent={
-          list.isPending ? <SkeletonList /> : list.isError ? undefined : (
-            <EmptyState title={search.trim() ? undefined : t("saved_kundlis")} message={search.trim() ? t("no_results") : t("no_saved")}
-              action={search.trim() ? undefined : { label: t("new_kundli"), icon: "add", onPress: () => router.push("/kundli/new") }} />
-          )
-        }
-        refreshControl={<RefreshControl refreshing={list.isRefetching && !list.isPending} onRefresh={() => void list.refetch()} tintColor={colors.accent} colors={[colors.accent]} />}
+        ListEmptyComponent={emptyComponent}
+        refreshControl={isSignedIn ? <RefreshControl refreshing={list.isRefetching && !list.isPending} onRefresh={() => void list.refetch()} tintColor={colors.accent} colors={[colors.accent]} /> : undefined}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Switch, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useAppAuth } from "@/auth/useAppAuth";
 import { Button, Chip, EmptyState, InlineError, Section, Text, TextField } from "@/components/ui";
 import { ASK_EXAMPLES, isValidQuestion, type AskHistoryItem } from "@/domain/ask";
 import { verdictTone } from "@/domain/tone";
@@ -13,11 +15,24 @@ export function AskTab({ kundli }: { kundli: Kundli }) {
   const styles = useStyles();
   const { colors } = useTheme();
   const { t, lang } = useI18n();
+  const router = useRouter();
+  const { isSignedIn } = useAppAuth();
   const status = useAskStatus();
   const { history, ask, busy, clear } = useAsk(kundli, lang);
   const [q, setQ] = useState("");
   const [useAi, setUseAi] = useState(true);
   const aiOn = !!status.data?.ai;
+
+  if (!isSignedIn) {
+    return (
+      <View testID="ask-tab">
+        <EmptyState
+          message={t("auth_ask_required")}
+          action={{ label: t("auth_sign_in"), icon: "log-in-outline", onPress: () => router.push("/(auth)/sign-in") }}
+        />
+      </View>
+    );
+  }
 
   const send = async (text: string) => { await ask(text, aiOn && useAi); setQ(""); };
 

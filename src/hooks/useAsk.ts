@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { engineApi, queryKeys } from "@/api";
+import { useAppAuth } from "@/auth/useAppAuth";
 import { addToHistory, askHistoryKey, isValidQuestion, type AskHistoryItem } from "@/domain/ask";
 import { birthOf, nowIn } from "@/domain/birth";
 import type { Kundli, Lang } from "@/types/api";
@@ -15,7 +16,9 @@ export function useAskStatus() {
 }
 
 export function useAsk(kundli: Kundli, lang: Lang) {
-  const storeKey = askHistoryKey(kundli.id || kundli.datetime_local);
+  const { userId } = useAppAuth();
+  const baseKey = kundli.id || kundli.datetime_local;
+  const storeKey = askHistoryKey(userId ? `${userId}:${baseKey}` : baseKey);
   const [history, setHistory] = useState<AskHistoryItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 

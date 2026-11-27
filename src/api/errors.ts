@@ -68,6 +68,7 @@ export function errorMessageKey(e: unknown): string {
     case "parse":
       return "err_parse";
     case "http":
+      if (e.status === 401) return "err_unauthorized";
       if (e.status === 404) return "not_found";
       if (e.status === 422) return "err_validation";
       return "err_server";

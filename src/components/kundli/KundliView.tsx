@@ -8,6 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { errorMessageKey } from "@/api";
+import { useAppAuth } from "@/auth/useAppAuth";
 import { AskTab } from "@/components/tabs/AskTab";
 import { ChartTab } from "@/components/tabs/ChartTab";
 import { DashaTab } from "@/components/tabs/DashaTab";
@@ -32,6 +33,7 @@ export function KundliView({ initial }: { initial: Kundli }) {
   const { t, lang } = useI18n();
   const router = useRouter();
   const toast = useToast();
+  const { isSignedIn } = useAppAuth();
   const [k, setK] = useState<Kundli>(initial);
   const [tab, setTab] = useState<KundliTab>("chart");
   const [editing, setEditing] = useState(false);
@@ -41,6 +43,10 @@ export function KundliView({ initial }: { initial: Kundli }) {
   const del = useDeleteKundli();
 
   const onSave = async (next: Kundli = k) => {
+    if (!isSignedIn) {
+      router.push("/(auth)/sign-in");
+      return;
+    }
     try {
       const saved = await save.mutateAsync(next);
       setK(saved);
@@ -55,6 +61,10 @@ export function KundliView({ initial }: { initial: Kundli }) {
     if (k.id) void onSave(merged); else setK(merged);
   };
   const onDelete = async () => {
+    if (!isSignedIn) {
+      router.push("/(auth)/sign-in");
+      return;
+    }
     if (!k.id || !(await confirmAsync(t("confirm_delete"), t("delete"), t("cancel")))) return;
     try { await del.mutateAsync(k.id); toast(t("kundli_deleted")); router.back(); } catch { /* shown below */ }
   };

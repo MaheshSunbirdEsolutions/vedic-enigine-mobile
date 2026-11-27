@@ -1,13 +1,13 @@
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BrandTitle } from "@/components/BrandTitle";
-import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { HeaderActions } from "@/components/HeaderActions";
 import { TabIcon } from "@/components/TabIcon";
 import { tapFeedback } from "@/components/ui";
 import { useI18n } from "@/i18n/I18nProvider";
 import { navigationTheme, useTheme } from "@/theme";
 
-const headerRight = () => <LanguageSwitch />;
+const headerRight = () => <HeaderActions />;
 const brandTitle = () => <BrandTitle />;
 
 export default function TabLayout() {

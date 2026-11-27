@@ -5,7 +5,7 @@
  */
 import { ApiError, parseErrorDetail } from "./errors";
 
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export type RequestOptions = {
   method?: HttpMethod;
@@ -19,6 +19,7 @@ export type HttpClientConfig = {
   getBaseUrl: () => string;
   timeoutMs: number;
   fetchImpl?: typeof fetch;
+  getToken?: () => Promise<string | null> | string | null;
 };
 
 export type HttpClient = { request: <T>(path: string, opts?: RequestOptions) => Promise<T> };
@@ -35,6 +36,15 @@ export function buildUrl(base: string, path: string, query?: RequestOptions["que
 
 export function createHttpClient(config: HttpClientConfig): HttpClient {
   const doFetch = config.fetchImpl ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
+
+  async function resolveToken(): Promise<string | null> {
+    if (!config.getToken) return null;
+    try {
+      return (await config.getToken()) ?? null;
+    } catch {
+      return null;
+    }
+  }
 
   async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
     const hasBody = opts.body !== undefined;
@@ -56,9 +66,17 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
 
     let res: Response;
     try {
+      const token = config.getToken ? await resolveToken() : null;
+      if (controller.signal.aborted) {
+        throw new Error("aborted");
+      }
       res = await doFetch(url, {
         method,
-        headers: { accept: "application/json", ...(hasBody ? { "content-type": "application/json" } : {}) },
+        headers: {
+          accept: "application/json",
+          ...(hasBody ? { "content-type": "application/json" } : {}),
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
         body: hasBody ? JSON.stringify(opts.body) : undefined,
         signal: controller.signal,
       });
