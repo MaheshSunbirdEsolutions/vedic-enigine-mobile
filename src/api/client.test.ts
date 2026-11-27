@@ -103,4 +103,23 @@ describe("http client", () => {
     await failing.request("/health");
     expect(f.mock.calls[2][1].headers.authorization).toBeUndefined();
   });
+
+  it("force-refreshes token with skipCache on 401 and retries once", async () => {
+    const getToken = jest.fn(async (opts?: { skipCache?: boolean }) => (opts?.skipCache ? "fresh-jwt" : "stale-jwt"));
+    const f = jest.fn()
+      .mockResolvedValueOnce(fakeResponse(401, { detail: "Invalid or expired token" }))
+      .mockResolvedValueOnce(fakeResponse(200, { ok: true }));
+    const c = createHttpClient({
+      getBaseUrl: () => "http://e",
+      timeoutMs: 1000,
+      fetchImpl: f,
+      getToken,
+    });
+
+    await expect(c.request("/kundlis")).resolves.toEqual({ ok: true });
+    expect(getToken).toHaveBeenNthCalledWith(1, undefined);
+    expect(getToken).toHaveBeenNthCalledWith(2, { skipCache: true });
+    expect(f.mock.calls[0][1].headers.authorization).toBe("Bearer stale-jwt");
+    expect(f.mock.calls[1][1].headers.authorization).toBe("Bearer fresh-jwt");
+  });
 });

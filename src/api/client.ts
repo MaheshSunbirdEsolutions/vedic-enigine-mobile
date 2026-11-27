@@ -15,11 +15,13 @@ export type RequestOptions = {
   timeoutMs?: number;
 };
 
+export type TokenProvider = (opts?: { skipCache?: boolean }) => Promise<string | null> | string | null;
+
 export type HttpClientConfig = {
   getBaseUrl: () => string;
   timeoutMs: number;
   fetchImpl?: typeof fetch;
-  getToken?: () => Promise<string | null> | string | null;
+  getToken?: TokenProvider;
 };
 
 export type HttpClient = { request: <T>(path: string, opts?: RequestOptions) => Promise<T> };
@@ -37,10 +39,10 @@ export function buildUrl(base: string, path: string, query?: RequestOptions["que
 export function createHttpClient(config: HttpClientConfig): HttpClient {
   const doFetch = config.fetchImpl ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
 
-  async function resolveToken(): Promise<string | null> {
+  async function resolveToken(opts?: { skipCache?: boolean }): Promise<string | null> {
     if (!config.getToken) return null;
     try {
-      return (await config.getToken()) ?? null;
+      return (await config.getToken(opts)) ?? null;
     } catch {
       return null;
     }
@@ -64,22 +66,31 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
       else opts.signal.addEventListener("abort", onAbort);
     }
 
+    const performFetch = (authToken: string | null) =>
+      doFetch(url, {
+        method,
+        headers: {
+          accept: "application/json",
+          ...(hasBody ? { "content-type": "application/json" } : {}),
+          ...(authToken ? { authorization: `Bearer ${authToken}` } : {}),
+        },
+        body: hasBody ? JSON.stringify(opts.body) : undefined,
+        signal: controller.signal,
+      });
+
     let res: Response;
     try {
       const token = config.getToken ? await resolveToken() : null;
       if (controller.signal.aborted) {
         throw new Error("aborted");
       }
-      res = await doFetch(url, {
-        method,
-        headers: {
-          accept: "application/json",
-          ...(hasBody ? { "content-type": "application/json" } : {}),
-          ...(token ? { authorization: `Bearer ${token}` } : {}),
-        },
-        body: hasBody ? JSON.stringify(opts.body) : undefined,
-        signal: controller.signal,
-      });
+      res = await performFetch(token);
+      if (res.status === 401 && config.getToken && !controller.signal.aborted) {
+        const refreshed = await resolveToken({ skipCache: true });
+        if (refreshed && refreshed !== token && !controller.signal.aborted) {
+          res = await performFetch(refreshed);
+        }
+      }
     } catch (cause) {
       const kind = timedOut ? "timeout" : controller.signal.aborted ? "aborted" : "network";
       throw new ApiError({ kind, path, cause });

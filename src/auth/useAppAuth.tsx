@@ -1,6 +1,8 @@
 import { createContext, createElement, useContext, useMemo, type ReactNode } from "react";
 import { useAuth, useUser } from "@clerk/expo";
 
+import type { GetTokenOptions } from "./tokenBridge";
+
 export type AppAuthState = {
   isConfigured: boolean;
   isLoaded: boolean;
@@ -8,7 +10,7 @@ export type AppAuthState = {
   userId: string | null;
   email: string | null;
   fullName: string | null;
-  getToken: () => Promise<string | null>;
+  getToken: (opts?: GetTokenOptions) => Promise<string | null>;
   signOut: () => Promise<void>;
 };
 
@@ -40,7 +42,7 @@ export function ClerkAppAuthProvider({ children }: { children: ReactNode }) {
       userId: userId ?? null,
       email,
       fullName,
-      getToken: async () => (await getToken()) ?? null,
+      getToken: async (opts) => (await getToken(opts)) ?? null,
       signOut: async () => {
         await signOut();
       },

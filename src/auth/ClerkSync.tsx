@@ -15,15 +15,10 @@ export function ClerkSync() {
   const syncedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!isConfigured) {
-      setAuthTokenGetter(null);
-      return;
-    }
-    setAuthTokenGetter(isSignedIn ? getToken : null);
-    return () => {
-      setAuthTokenGetter(null);
-    };
+    setAuthTokenGetter(isConfigured && isSignedIn ? getToken : null);
   }, [getToken, isConfigured, isSignedIn]);
+
+  useEffect(() => () => setAuthTokenGetter(null), []);
 
   useEffect(() => {
     if (!isConfigured || !isLoaded) return;
