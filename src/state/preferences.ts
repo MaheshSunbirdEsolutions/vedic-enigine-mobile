@@ -19,10 +19,17 @@ export type PreferencesState = {
   colorScheme: ColorPreference;
   /** Set in Settings to point a build at another engine without rebuilding. */
   engineUrlOverride: string | null;
+  dailyHoroscopeEnabled: boolean;
+  dailyHoroscopeHour: number;
+  dailyHoroscopeMinute: number;
+  notificationPermissionAsked: boolean;
   setLang: (lang: Lang) => void;
   setChartStyle: (s: ChartStyle) => void;
   setColorScheme: (c: ColorPreference) => void;
   setEngineUrlOverride: (url: string | null) => void;
+  setDailyHoroscopeEnabled: (enabled: boolean) => void;
+  setDailyHoroscopeTime: (hour: number, minute: number) => void;
+  setNotificationPermissionAsked: (asked: boolean) => void;
 };
 
 export const usePreferences = create<PreferencesState>()(
@@ -32,18 +39,43 @@ export const usePreferences = create<PreferencesState>()(
       chartStyle: "north",
       colorScheme: "system",
       engineUrlOverride: null,
+      dailyHoroscopeEnabled: false,
+      dailyHoroscopeHour: 8,
+      dailyHoroscopeMinute: 0,
+      notificationPermissionAsked: false,
       setLang: (lang) => set({ lang }),
       setChartStyle: (chartStyle) => set({ chartStyle }),
       setColorScheme: (colorScheme) => set({ colorScheme }),
       setEngineUrlOverride: (engineUrlOverride) => set({ engineUrlOverride }),
+      setDailyHoroscopeEnabled: (dailyHoroscopeEnabled) => set({ dailyHoroscopeEnabled }),
+      setDailyHoroscopeTime: (dailyHoroscopeHour, dailyHoroscopeMinute) =>
+        set({ dailyHoroscopeHour, dailyHoroscopeMinute }),
+      setNotificationPermissionAsked: (notificationPermissionAsked) =>
+        set({ notificationPermissionAsked }),
     }),
     {
       name: "jyotish-preferences",
-      version: 2,
-      // v1 had no colorScheme; missing keys fall back to the defaults above.
-      migrate: (persisted) => ({ colorScheme: "system", ...(persisted as object) }) as PreferencesState,
+      version: 4,
+      // Missing keys from older persisted versions fall back to defaults above.
+      migrate: (persisted) => ({
+        colorScheme: "system",
+        dailyHoroscopeEnabled: false,
+        dailyHoroscopeHour: 8,
+        dailyHoroscopeMinute: 0,
+        notificationPermissionAsked: false,
+        ...(persisted as object),
+      }) as PreferencesState,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (s) => ({ lang: s.lang, chartStyle: s.chartStyle, colorScheme: s.colorScheme, engineUrlOverride: s.engineUrlOverride }),
+      partialize: (s) => ({
+        lang: s.lang,
+        chartStyle: s.chartStyle,
+        colorScheme: s.colorScheme,
+        engineUrlOverride: s.engineUrlOverride,
+        dailyHoroscopeEnabled: s.dailyHoroscopeEnabled,
+        dailyHoroscopeHour: s.dailyHoroscopeHour,
+        dailyHoroscopeMinute: s.dailyHoroscopeMinute,
+        notificationPermissionAsked: s.notificationPermissionAsked,
+      }),
     },
   ),
 );

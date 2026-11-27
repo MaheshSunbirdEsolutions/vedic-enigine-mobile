@@ -14,6 +14,9 @@
     },
     "android": {
       "package": "com.mandavconsultancy.jyotishlab",
+      "permissions": [
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#c2571a",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -45,7 +48,14 @@
       "expo-sharing",
       "@clerk/expo",
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#c2571a"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

@@ -3,6 +3,7 @@
  * and the stack navigator with slide transitions and the language switch in every header.
  */
 import { useEffect, useState, type ReactNode } from "react";
+import { View } from "react-native";
 import { ClerkProvider } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
 import { Fraunces_600SemiBold } from "@expo-google-fonts/fraunces";
@@ -21,9 +22,17 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ClerkSync } from "@/auth/ClerkSync";
 import { ClerkAppAuthProvider } from "@/auth/useAppAuth";
 import { HeaderActions } from "@/components/HeaderActions";
+import { OfflineGate } from "@/components/OfflineGate";
 import { ToastProvider } from "@/components/ui";
 import { env } from "@/config/env";
 import { I18nProvider, useI18n } from "@/i18n/I18nProvider";
+import { useNetworkStatus } from "@/network/useNetworkStatus";
+import {
+  configureNotificationHandler,
+  HoroscopeNotificationObserver,
+  rescheduleDailyHoroscopeIfGranted,
+  useStartupNotificationPermissionCheck,
+} from "@/notifications/dailyHoroscope";
 import { usePreferences, usePreferencesHydrated } from "@/state/preferences";
 import { createQueryClient } from "@/state/queryClient";
 import { navigationTheme, ThemeProvider, useTheme } from "@/theme";
@@ -33,6 +42,7 @@ export const unstable_settings = { anchor: "(tabs)" };
 // Keep the native splash up until fonts and saved preferences (language, colour scheme) are
 // ready, so the first frame already has the right type, language and colours.
 SplashScreen.preventAutoHideAsync().catch(() => {});
+configureNotificationHandler();
 
 const FONTS = {
   Fraunces_600SemiBold,
@@ -50,9 +60,13 @@ function ThemedApp({ children }: { children: ReactNode }) {
 }
 
 function RootStack({ ready }: { ready: boolean }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const theme = useTheme();
   const nav = navigationTheme(theme);
+  const net = useNetworkStatus();
+  const notifEnabled = usePreferences((s) => s.dailyHoroscopeEnabled);
+  const notifHour = usePreferences((s) => s.dailyHoroscopeHour);
+  const notifMinute = usePreferences((s) => s.dailyHoroscopeMinute);
 
   useEffect(() => {
     // Root view colour behind screens (no white flash in dark mode).
@@ -61,24 +75,45 @@ function RootStack({ ready }: { ready: boolean }) {
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});
   }, [ready]);
+  useStartupNotificationPermissionCheck(ready, t("notif_daily_title"));
+  useEffect(() => {
+    if (!ready || !notifEnabled) return;
+    void rescheduleDailyHoroscopeIfGranted({
+      hour: notifHour,
+      minute: notifMinute,
+      title: t("notif_push_title"),
+      body: t("notif_push_body"),
+      channelName: t("notif_daily_title"),
+    });
+  }, [ready, lang, notifEnabled, notifHour, notifMinute, t]);
 
   // Wait until fonts and saved preferences are ready before mounting screens, so Yoga never
   // measures and caches text bounds with the fallback system font on Android.
   if (!ready) return null;
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <StatusBar style={theme.dark ? "light" : "dark"} />
-      <Stack screenOptions={{ ...nav.header, ...nav.stack, headerRight, contentStyle: nav.content, headerBackButtonDisplayMode: "minimal" }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/sign-in" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/sign-up" options={{ headerShown: false }} />
-        <Stack.Screen name="oauth-native-callback" options={{ headerShown: false, animation: "none" }} />
-        <Stack.Screen name="kundli/new" options={{ title: t("new_kundli") }} />
-        <Stack.Screen name="kundli/preview" options={{ title: t("new_kundli") }} />
-        <Stack.Screen name="kundli/[id]" options={{ title: t("nav_home") }} />
-      </Stack>
-    </>
+      <HoroscopeNotificationObserver ready={ready} offline={net.offline} />
+      <View
+        style={{ flex: 1 }}
+        pointerEvents={net.offline ? "none" : "auto"}
+        importantForAccessibility={net.offline ? "no-hide-descendants" : "auto"}
+      >
+        <Stack screenOptions={{ ...nav.header, ...nav.stack, headerRight, contentStyle: nav.content, headerBackButtonDisplayMode: "minimal" }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)/sign-in" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)/sign-up" options={{ headerShown: false }} />
+          <Stack.Screen name="oauth-native-callback" options={{ headerShown: false, animation: "none" }} />
+          <Stack.Screen name="kundli/new" options={{ title: t("new_kundli") }} />
+          <Stack.Screen name="kundli/preview" options={{ title: t("new_kundli") }} />
+          <Stack.Screen name="kundli/[id]" options={{ title: t("nav_home") }} />
+        </Stack>
+      </View>
+      {net.offline ? (
+        <OfflineGate checking={net.checking} stillOffline={net.stillOffline} onRefresh={() => void net.refresh()} />
+      ) : null}
+    </View>
   );
 }
 
